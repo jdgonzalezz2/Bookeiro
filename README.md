@@ -6,12 +6,6 @@ Sistema SaaS integral para la gestión de barberías premium. Incluye una aplica
    ```bash
    npm run dev
    ```
-3. **Iniciar Frontend**:
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
 ## ✨ Características Principales
 - **Reservas en 4 pasos**: Selección de barbero, servicio, fecha y hora.
 - **PWA Ready**: Instalable en dispositivos móviles para una experiencia nativa.
