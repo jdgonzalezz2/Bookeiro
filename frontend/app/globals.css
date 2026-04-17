@@ -719,3 +719,30 @@ a {
     padding: 0 1rem;
   }
 }
+
+/* ============================================================
+   MODULE CARDS (Dashboard Grid)
+   ============================================================ */
+.dashboard-module-card {
+  background: var(--color-glass);
+  padding: 2rem;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-glass-border);
+}
+
+.dashboard-module-card.clickable {
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.dashboard-module-card.clickable:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-primary);
+  box-shadow: 0 10px 40px -10px rgba(201,168,76,0.15);
+}

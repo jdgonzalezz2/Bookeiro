@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getCurrentProfile } from '@/lib/auth'
 import { createInsForgeServerClient } from '@/lib/insforge-server'
 import { getAccessToken } from '@/lib/cookies'
+import { LogOut, Scissors, Phone, Clock, DollarSign, Calendar, UserRound } from 'lucide-react'
 import { signOutAction } from '../actions'
 
 export const metadata = { title: 'Portal del Empleado | Bookeiro' }
@@ -71,17 +72,21 @@ export default async function WorkerDashboardPage() {
     <div className="dashboard-root" style={{ background: 'var(--color-bg-base)' }}>
       {/* ── Navbar ── */}
       <nav className="dashboard-nav" style={{ borderBottom: '1px solid var(--color-glass-border)' }}>
-        <div className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {tenant?.logo_url ? <img src={tenant.logo_url} style={{width: 35, height: 35, borderRadius: '50%', objectFit: 'cover'}} alt="logo" /> : '💈'}
-          <span className="nav-logo-name">{tenant?.name} (Portal Vendedor)</span>
+        <div className="nav-logo">
+          <div className="nav-logo-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Scissors size={20} />
+          </div>
+          <span className="nav-logo-name">{tenant?.name} <span style={{fontSize:'0.8rem', opacity:0.7}}>(Portal Vendedor)</span></span>
         </div>
         <div className="nav-user">
-          <div className="nav-user-info" style={{ textAlign: 'right' }}>
-            <div className="nav-user-name">{myStaffRecord.name}</div>
+          <div className="nav-user-info">
+            <div className="nav-user-name">{myStaffRecord.name.split(' ')[0]}</div>
             <div className="nav-user-email">Barbero</div>
           </div>
           <form action={signOutAction}>
-            <button type="submit" className="btn btn-ghost btn-signout">Salir</button>
+            <button type="submit" className="btn btn-ghost btn-signout" title="Cerrar sesión" style={{ padding: '0.4rem' }}>
+              <LogOut size={20} />
+            </button>
           </form>
         </div>
       </nav>
@@ -90,13 +95,16 @@ export default async function WorkerDashboardPage() {
       <main className="dashboard-content" style={{ maxWidth: '1000px', margin: '0 auto', padding: '2rem' }}>
         
         {/* Welcome Card */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2.5rem', background: 'var(--color-glass)', padding: '2rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)' }}>
-          <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', background: 'var(--color-border)' }}>
-            {myStaffRecord.avatar_url ? <img src={myStaffRecord.avatar_url} style={{width:'100%',height:'100%',objectFit:'cover'}} alt="Me"/> : <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'2rem'}}>✂️</div>}
+        <div style={{
+          background: 'var(--color-glass)', border: '1px solid var(--color-glass-border)',
+          borderRadius: '16px', padding: '2rem', display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem', flexWrap: 'wrap'
+        }}>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-border)' }}>
+            <UserRound size={40} className="text-gray-400" />
           </div>
           <div>
-            <h1 style={{ fontSize: '2rem', margin: 0 }}>Hola, {myStaffRecord.name}</h1>
-            <p style={{ color: 'var(--color-text-secondary)', margin: '0.5rem 0 0 0' }}>Aquí está tu agenda de trabajo.</p>
+            <h1 style={{ fontSize: '2rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>Hola, {myStaffRecord.name.split(' ')[0]}</h1>
+            <p style={{ color: 'var(--color-text-secondary)', marginTop: '0.4rem' }}>Aquí está tu agenda de trabajo.</p>
           </div>
         </div>
 
@@ -140,15 +148,15 @@ export default async function WorkerDashboardPage() {
                     {app.appointment_date !== todayStr && <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{app.appointment_date}</span>}
                   </div>
                   <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{app.customer_name}</div>
-                  <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
-                    📱 {app.customer_phone}
+                  <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Phone size={14} /> {app.customer_phone}
                   </div>
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontWeight: 600 }}>{(app.services as any)?.name || 'Servicio'}</div>
-                  <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{(app.services as any)?.duration_mins || 0} min</div>
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#2ecc71' }}>${app.base_price}</div>
+                  <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem', justifyContent: 'flex-end' }}><Clock size={12}/> {(app.services as any)?.duration_mins || 0} min</div>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '0.2rem', justifyContent: 'flex-end' }}><DollarSign size={16}/> {app.base_price}</div>
                 </div>
               </div>
             ))}

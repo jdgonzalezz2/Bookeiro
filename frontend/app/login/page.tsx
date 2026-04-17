@@ -4,6 +4,7 @@ import { useActionState, useTransition, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signInAction, initiateOAuthAction } from './actions'
+import { Scissors } from 'lucide-react'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -23,7 +24,9 @@ function LoginForm() {
       {/* ── Left: Branding ── */}
       <div className="auth-brand">
         <div className="auth-brand-logo">
-          <div className="auth-brand-icon">✂️</div>
+          <div className="auth-brand-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Scissors size={28} />
+          </div>
           <span className="auth-brand-name">Bookeiro</span>
         </div>
         <h2 className="auth-brand-tagline">

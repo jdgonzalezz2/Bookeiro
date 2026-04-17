@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { saveWorkingHoursAction } from '../actions'
+import { Save, CheckCircle2 } from 'lucide-react'
 
 const DAYS = [
   { id: 1, name: 'Lunes' },
@@ -50,7 +51,7 @@ export default function HorariosClient({ staffId, initialHours }: { staffId: str
 
     const result = await saveWorkingHoursAction(staffId, activeHours)
     if (result.success) {
-      setMessage({ text: '✅ Horarios guardados con éxito. Tu motor de reservas ya tiene en cuenta estas franjas.', type: 'success' })
+      setMessage({ text: 'Horarios guardados con éxito. Tu motor de reservas ya tiene en cuenta estas franjas.', type: 'success' })
     } else {
       setMessage({ text: 'Error: ' + result.error, type: 'error' })
     }
@@ -62,7 +63,8 @@ export default function HorariosClient({ staffId, initialHours }: { staffId: str
       <h2 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', fontFamily: 'var(--font-display)' }}>Disponibilidad por Día</h2>
       
       {message && (
-        <div className={`alert alert-${message.type}`} style={{ marginBottom: '1.5rem' }}>
+        <div className={`alert alert-${message.type}`} style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {message.type === 'success' && <CheckCircle2 size={18} />}
           {message.text}
         </div>
       )}
@@ -121,8 +123,8 @@ export default function HorariosClient({ staffId, initialHours }: { staffId: str
         ))}
       </div>
 
-      <button onClick={handleSave} disabled={isSaving} className="btn btn-primary" style={{ width: '100%' }}>
-        {isSaving ? 'Guardando...' : 'Guardar Nuevo Horario 💾'}
+      <button onClick={handleSave} disabled={isSaving} className="btn btn-primary" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+        {isSaving ? 'Guardando...' : <><Save size={18} /> Guardar Nuevo Horario</>}
       </button>
     </div>
   )

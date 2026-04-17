@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useTransition } from 'react'
 import Link from 'next/link'
 import { signUpAction, verifyEmailAction, resendVerificationAction } from './actions'
+import { Scissors, Mail } from 'lucide-react'
 
 type SignUpState = {
   error?: string
@@ -72,7 +73,9 @@ export default function RegisterPage() {
       {/* ── Left: Branding ── */}
       <div className="auth-brand">
         <div className="auth-brand-logo">
-          <div className="auth-brand-icon">✂️</div>
+          <div className="auth-brand-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Scissors size={28} />
+          </div>
           <span className="auth-brand-name">Bookeiro</span>
         </div>
         <h2 className="auth-brand-tagline">
@@ -175,7 +178,11 @@ export default function RegisterPage() {
             /* ── OTP Verification Step ── */
             <>
               <div className="auth-card-header">
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📬</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', color: 'var(--color-primary)' }}>
+                  <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '1rem', borderRadius: '50%' }}>
+                    <Mail size={32} />
+                  </div>
+                </div>
                 <h1 className="auth-card-title">Verifica tu correo</h1>
                 <p className="auth-card-subtitle">
                   Enviamos un código de 6 dígitos a<br />

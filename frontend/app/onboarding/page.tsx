@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from 'react'
 import { createTenantAction } from './actions'
+import { Scissors } from 'lucide-react'
 
 export default function OnboardingPage() {
   const [state, formAction, isPending] = useActionState(createTenantAction, null)
@@ -27,7 +28,9 @@ export default function OnboardingPage() {
       {/* ── Left: Branding ── */}
       <div className="auth-brand">
         <div className="auth-brand-logo">
-          <div className="auth-brand-icon">✂️</div>
+          <div className="auth-brand-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Scissors size={28} />
+          </div>
           <span className="auth-brand-name">Bookeiro</span>
         </div>
         <h2 className="auth-brand-tagline">

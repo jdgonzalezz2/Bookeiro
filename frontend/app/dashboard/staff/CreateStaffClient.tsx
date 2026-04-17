@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { createStaffAction } from './actions'
+import { Plus } from 'lucide-react'
 
 export default function CreateStaffClient() {
   const [name, setName] = useState('')
   const [inviteEmail, setInviteEmail] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -17,6 +19,7 @@ export default function CreateStaffClient() {
     if (res.success) {
       setName('')
       setInviteEmail('')
+      setIsOpen(false)
     } else {
       alert('Error: ' + res.error)
     }
@@ -42,8 +45,8 @@ export default function CreateStaffClient() {
           value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} 
         />
       </div>
-      <button onClick={handleAdd} className="btn btn-primary" style={{ alignSelf: 'flex-end', height: '42px' }} disabled={isSaving || !name.trim()}>
-        {isSaving ? 'Añadiendo...' : 'Añadir ➕'}
+      <button onClick={handleAdd} className="btn btn-primary" style={{ alignSelf: 'flex-end', height: '42px', display: 'flex', alignItems: 'center', gap: '0.4rem' }} disabled={isSaving || !name.trim()}>
+        {isSaving ? 'Añadiendo...' : <><Plus size={16} /> Añadir</>}
       </button>
     </div>
   )
