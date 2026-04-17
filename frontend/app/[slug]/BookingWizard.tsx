@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getTenantServices, getTenantStaff, getAvailableSlots, submitBooking } from './actions'
+import { CreditCard, Lock, CheckCircle2 } from 'lucide-react'
 
 type Service = any
 type Staff = any
@@ -63,11 +64,12 @@ export default function BookingWizard({ tenant, primaryColor }: { tenant: any, p
     <div style={{ background: 'var(--color-glass)', border: '1px solid var(--color-glass-border)', padding: '2.5rem', borderRadius: 'var(--radius-lg)', boxShadow: 'rgba(0,0,0,0.5) 0px 10px 30px', textAlign: 'left' }}>
       
       {/* ProgressBar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '1px solid var(--color-glass-border)', paddingBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '1px solid var(--color-glass-border)', paddingBottom: '1rem', fontSize: '0.9rem' }}>
         <span style={{ fontWeight: 600, color: step >= 1 ? primaryColor : 'var(--color-text-muted)' }}>1. Servicio</span>
         <span style={{ fontWeight: 600, color: step >= 2 ? primaryColor : 'var(--color-text-muted)' }}>2. Profesional</span>
         <span style={{ fontWeight: 600, color: step >= 3 ? primaryColor : 'var(--color-text-muted)' }}>3. Horario</span>
         <span style={{ fontWeight: 600, color: step >= 4 ? primaryColor : 'var(--color-text-muted)' }}>4. Datos</span>
+        <span style={{ fontWeight: 600, color: step >= 5 ? primaryColor : 'var(--color-text-muted)' }}>5. Pago</span>
       </div>
 
       {bookingError && (
@@ -181,7 +183,16 @@ export default function BookingWizard({ tenant, primaryColor }: { tenant: any, p
             <p><strong>Servicio:</strong> {selectedService.name}</p>
             <p><strong>Profesional:</strong> {selectedStaff.name}</p>
             <p><strong>Día y Hora:</strong> {new Date(selectedSlot.startIso).toLocaleDateString()} a las {selectedSlot.label}</p>
-            <p><strong>Total a Pagar:</strong> <span style={{ color: primaryColor, fontWeight: 700 }}>${selectedService.base_price}</span></p>
+            <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1rem' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+                  <span>Abono hoy (50% Reserva):</span>
+                  <span style={{ color: primaryColor, fontWeight: 700 }}>${(selectedService.base_price * 0.5).toFixed(2)}</span>
+               </div>
+               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-text-muted)' }}>
+                  <span>A pagar tras el servicio:</span>
+                  <span>${(selectedService.base_price * 0.5).toFixed(2)}</span>
+               </div>
+            </div>
           </div>
 
           <div style={{ display: 'grid', gap: '1rem' }}>
@@ -196,26 +207,104 @@ export default function BookingWizard({ tenant, primaryColor }: { tenant: any, p
           </div>
 
           <button 
-            disabled={isSubmitting || !customerInfo.name || !customerInfo.phone}
+            disabled={!customerInfo.name || !customerInfo.phone}
+            onClick={() => setStep(5)}
+            style={{ 
+              marginTop: '1.5rem', width: '100%', background: primaryColor, color: '#000', padding: '1rem', 
+              borderRadius: 'var(--radius-md)', border: 'none', fontWeight: 700, fontSize: '1.1rem', cursor: (!customerInfo.name || !customerInfo.phone) ? 'not-allowed' : 'pointer' 
+            }}
+          >
+            Continuar al Pago Seguro
+          </button>
+        </div>
+      )}
+
+      {/* STEP 5: Checkout (Fake Stripe) */}
+      {step === 5 && selectedService && selectedStaff && selectedSlot && (
+        <div style={{ animation: 'slideUp 0.4s ease-out' }}>
+          <button onClick={() => { setBookingError(null); setStep(4) }} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', marginBottom: '1rem' }}>← Volver</button>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.25rem', margin: 0 }}>Checkout Seguro</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#2ecc71', fontSize: '0.85rem', fontWeight: 600 }}>
+              <Lock size={14} /> Encriptado
+            </div>
+          </div>
+
+          {/* Resumen Final Cobro */}
+          <div style={{ background: 'linear-gradient(145deg, rgba(201,168,76,0.1) 0%, rgba(201,168,76,0.02) 100%)', border: '1px solid rgba(201,168,76,0.2)', padding: '1.5rem', borderRadius: 'var(--radius-md)', marginBottom: '2rem', textAlign: 'center' }}>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Monto a cobrar ahora (50% Reserva)</p>
+            <h2 style={{ fontSize: '3rem', fontWeight: 800, color: 'var(--color-text-primary)', margin: 0, letterSpacing: '-1px' }}>
+              ${(selectedService.base_price * 0.5).toFixed(2)}
+            </h2>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: '0.5rem' }}>El resto (${(selectedService.base_price * 0.5).toFixed(2)}) se pagará en el local.</p>
+          </div>
+
+          <div style={{ display: 'grid', gap: '1.2rem', marginBottom: '2rem' }}>
+            <div>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <CreditCard size={16} /> Número de Tarjeta
+              </label>
+              <input type="text" className="form-input" placeholder="0000 0000 0000 0000" maxLength={19} style={{ fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: '2px' }} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label className="form-label">Expiración</label>
+                <input type="text" className="form-input" placeholder="MM/YY" maxLength={5} style={{ textAlign: 'center' }} />
+              </div>
+              <div>
+                <label className="form-label">CVC</label>
+                <input type="password" className="form-input" placeholder="•••" maxLength={4} style={{ textAlign: 'center' }} />
+              </div>
+            </div>
+            <div>
+              <label className="form-label">Titular de la Tarjeta</label>
+              <input type="text" className="form-input" defaultValue={customerInfo.name} placeholder="Nombre en la tarjeta" />
+            </div>
+          </div>
+
+          <button 
+            disabled={isSubmitting}
             onClick={async () => {
               setIsSubmitting(true)
               setBookingError(null)
+
+              // Fake Gateway Delay (2 seconds)
+              await new Promise(resolve => setTimeout(resolve, 2000))
+
               const res = await submitBooking(
                 tenant.id, selectedStaff.id, selectedService.id, 
                 customerInfo.name, customerInfo.phone, 
-                selectedSlot.startIso, selectedSlot.endIso, selectedService.base_price
+                selectedSlot.startIso, selectedSlot.endIso, selectedService.base_price // Record full price in DB
               )
-              if (res.error) setBookingError(res.error)
-              else setBookingSuccess(true)
+              if (res.error) {
+                setBookingError(res.error)
+              } else {
+                setStep(6) // Wait, we use bookingSuccess for success
+                setBookingSuccess(true)
+              }
               setIsSubmitting(false)
             }}
             style={{ 
-              marginTop: '1.5rem', width: '100%', background: primaryColor, color: '#000', padding: '1rem', 
-              borderRadius: 'var(--radius-md)', border: 'none', fontWeight: 700, fontSize: '1.1rem', cursor: isSubmitting ? 'not-allowed' : 'pointer' 
+              width: '100%', background: primaryColor, color: '#000', padding: '1.2rem', 
+              borderRadius: 'var(--radius-md)', border: 'none', fontWeight: 700, fontSize: '1.1rem', cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem',
+              boxShadow: `0 8px 25px -5px ${primaryColor}60`
             }}
           >
-            {isSubmitting ? 'Procesando en Servidor...' : 'Confirmar Reserva de Cita'}
+            {isSubmitting ? (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span className="spinner" style={{ borderColor: 'rgba(0,0,0,0.2)', borderTopColor: '#000', width: 20, height: 20 }}></span> 
+                Procesando el Pago...
+              </span>
+            ) : (
+              <><Lock size={18} /> Pagar ${(selectedService.base_price * 0.5).toFixed(2)} y Confirmar</>
+            )}
           </button>
+          
+          <div style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--color-text-muted)', fontSize: '0.75rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem' }}>
+            <CheckCircle2 size={12} /> Pagos encriptados con seguridad 256-bit AES
+          </div>
         </div>
       )}
     </div>

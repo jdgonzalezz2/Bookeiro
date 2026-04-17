@@ -35,8 +35,8 @@ const MODULES = [
     icon: <CreditCard className="w-6 h-6" />,
     title: 'Finanzas',
     desc: 'Liquidación automática pasarela.',
-    badge: 'Próximamente',
-    badgeClass: 'badge-coming',
+    badge: 'Activo',
+    badgeClass: 'badge-active',
   },
   {
     icon: <ShieldCheck className="w-6 h-6" />,
@@ -169,13 +169,15 @@ export default async function DashboardPage() {
             const isServices = mod.title === 'Servicios'
             const isBooking = mod.title === 'Agendamiento'
             const isAnalytics = mod.title === 'Reportes'
-            const isClickable = isStaff || isServices || isBooking || isAnalytics
+            const isFinance = mod.title === 'Finanzas'
+            const isClickable = isStaff || isServices || isBooking || isAnalytics || isFinance
             
             let linkHref = '#'
             if (isStaff) linkHref = '/dashboard/staff'
             if (isServices) linkHref = '/dashboard/services'
             if (isBooking) linkHref = '/dashboard/booking'
             if (isAnalytics) linkHref = '/dashboard/analytics'
+            if (isFinance) linkHref = '/dashboard/finance'
             
             const cardContent = (
               <div className={`dashboard-module-card ${isClickable ? 'clickable' : ''}`}>
