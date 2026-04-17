@@ -57,6 +57,10 @@ export default async function DashboardPage() {
   const profile = await getCurrentProfile()
   if (!profile) redirect('/login')
 
+  if (profile.role === 'barber') {
+    redirect('/dashboard/worker')
+  }
+
   const accessToken = await getAccessToken()
   const insforge = createInsForgeServerClient(accessToken)
 

@@ -51,8 +51,14 @@ export default async function StaffPage() {
                 </div>
                 <div>
                   <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>{s.name}</div>
-                  <div style={{ fontSize: '0.8rem', color: s.is_active ? '#2ecc71' : '#e74c3c' }}>
+                  <div style={{ fontSize: '0.8rem', color: s.is_active ? '#2ecc71' : '#e74c3c', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {s.is_active ? '● Activo' : '● Inactivo'}
+                    
+                    {s.user_id ? (
+                      <span style={{ fontSize: '0.75rem', background: 'rgba(46, 204, 113, 0.2)', color: '#2ecc71', padding: '0.2rem 0.6rem', borderRadius: '12px' }}>✓ Vinculado</span>
+                    ) : s.invite_email ? (
+                      <span style={{ fontSize: '0.75rem', background: 'rgba(241, 196, 15, 0.2)', color: '#f1c40f', padding: '0.2rem 0.6rem', borderRadius: '12px' }}>⏳ Esperando a {s.invite_email}</span>
+                    ) : null}
                   </div>
                 </div>
               </div>

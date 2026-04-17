@@ -14,7 +14,9 @@ export default function ClientPage({ tenant }: { tenant: any }) {
   const [formData, setFormData] = useState({
     primary_color: tenant?.primary_color || '#D4AF37',
     font_family: tenant?.font_family || 'Inter',
+    theme: tenant?.theme || 'light',
     description: tenant?.description || '',
+    tags: (tenant?.tags || []).join(', '),
     map_url: tenant?.map_url || '',
     instagram: tenant?.instagram || '',
     whatsapp: tenant?.whatsapp || '',
@@ -65,7 +67,18 @@ export default function ClientPage({ tenant }: { tenant: any }) {
     setIsSaving(true)
     setMessage(null)
 
-    const result = await saveSettingsAction(tenant.id, formData)
+    // Process comma separated tags into an array
+    const processedTags = formData.tags
+      .split(',')
+      .map((t: string) => t.trim())
+      .filter((t: string) => t.length > 0)
+
+    const payload = {
+      ...formData,
+      tags: processedTags
+    }
+
+    const result = await saveSettingsAction(tenant.id, payload)
 
     if (result.error) {
       setMessage({ text: 'Error al guardar configuración: ' + result.error, type: 'error' })
@@ -155,6 +168,14 @@ export default function ClientPage({ tenant }: { tenant: any }) {
             </select>
           </div>
 
+          <div className="form-group">
+            <label className="form-label">Tema del Portal Público</label>
+            <select name="theme" value={formData.theme} onChange={handleTextChange} className="form-input">
+              <option value="light">Storefront Luminoso (Claro - Recomendado)</option>
+              <option value="dark">Storefront Oscuro (Nocturno)</option>
+            </select>
+          </div>
+
         </div>
 
         <div className="form-group">
@@ -167,6 +188,19 @@ export default function ClientPage({ tenant }: { tenant: any }) {
             placeholder="La mejor experiencia clásica de barbería en tu ciudad..."
             rows={3}
           />
+        </div>
+
+        <div className="form-group" style={{ marginTop: '1.5rem' }}>
+          <label className="form-label">Etiquetas del Negocio (Separadas por coma)</label>
+          <input 
+            type="text"
+            name="tags" 
+            value={formData.tags} 
+            onChange={handleTextChange} 
+            className="form-input" 
+            placeholder="Ej: Salón de belleza, Barbería Clásica, Spa de Uñas"
+          />
+          <small style={{ color: 'var(--color-text-muted)' }}>Estas aparecerán como tarjetas redondeadas en la cabecera de la vitrina.</small>
         </div>
 
         <div style={{ marginTop: '2rem', marginBottom: '1rem', borderTop: '1px solid var(--color-glass-border)', paddingTop: '1.5rem' }}>

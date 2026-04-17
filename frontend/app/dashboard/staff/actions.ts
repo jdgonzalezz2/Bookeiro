@@ -17,13 +17,16 @@ async function getClientAndTenant() {
   return { insforge, tenantId: profile.tenant_id }
 }
 
-export async function createStaffAction(name: string) {
+export async function createStaffAction(name: string, invite_email: string) {
   try {
     const { insforge, tenantId } = await getClientAndTenant()
     
+    const payload: any = { tenant_id: tenantId, name }
+    if (invite_email.trim()) payload.invite_email = invite_email.trim()
+
     const { error } = await insforge.database
       .from('staff')
-      .insert({ tenant_id: tenantId, name })
+      .insert(payload)
       
     if (error) return { error: error.message }
     
