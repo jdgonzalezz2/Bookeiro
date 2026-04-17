@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { format, addDays, startOfDay, getDay, isBefore } from 'date-fns';
@@ -13,7 +13,7 @@ type Slot     = { hora: string; disponible: boolean; };
 
 const STEP_LABELS = ['Elige tu barbero', 'Elige el servicio', 'Selecciona fecha y hora', 'Tus datos'];
 
-export default function ReservarPage() {
+function ReservarForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -57,8 +57,8 @@ export default function ReservarPage() {
 
   useEffect(() => { if (step === 3) fetchSlots(); }, [step, selFecha, fetchSlots]);
 
-  const servicioSel = servicios.find(s => s.id === selServicio);
-  const barberoSel  = barberos.find(b => b.id === selBarbero);
+  const servicioSel = servicios.find((s: Servicio) => s.id === selServicio);
+  const barberoSel  = barberos.find((b: Barbero) => b.id === selBarbero);
 
   const formatPrice = (p: number) =>
     new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p);
@@ -339,3 +339,16 @@ export default function ReservarPage() {
     </div>
   );
 }
+
+export default function ReservarPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="spinner spinner-lg" />
+      </div>
+    }>
+      <ReservarForm />
+    </Suspense>
+  );
+}
+
