@@ -19,11 +19,15 @@ export default async function AnalyticsPage() {
   const accessToken = await getAccessToken()
   const insforge = createInsForgeServerClient(accessToken)
 
-  // Fetch all Confirmed and Completed appointments
+  // Fetch all relevant appointments for deep analytics
   const { data: appointments } = await insforge.database
     .from('appointments')
-    .select('*')
-    .in('status', ['confirmed', 'completed'])
+    .select(`
+      *,
+      services(name),
+      staff(name)
+    `)
+    .in('status', ['confirmed', 'completed', 'cancelled'])
     .eq('tenant_id', profile.tenant_id)
     .order('start_time', { ascending: true })
 
