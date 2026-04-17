@@ -155,8 +155,13 @@ export default async function DashboardPage() {
           {MODULES.map((mod) => {
             const isStaff = mod.title === 'Gestión de Profesionales'
             const isServices = mod.title === 'Catálogo de Servicios'
-            const isClickable = isStaff || isServices
-            const linkHref = isStaff ? '/dashboard/staff' : '/dashboard/services'
+            const isBooking = mod.title === 'Motor de Agendamiento'
+            const isClickable = isStaff || isServices || isBooking
+            
+            let linkHref = '#'
+            if (isStaff) linkHref = '/dashboard/staff'
+            if (isServices) linkHref = '/dashboard/services'
+            if (isBooking) linkHref = '/dashboard/booking'
             
             const cardContent = (
               <div className="dashboard-card" style={isClickable ? { cursor: 'pointer', border: '1px solid var(--color-primary)' } : {}}>

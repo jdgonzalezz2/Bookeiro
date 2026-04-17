@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createInsForgeServerClient } from '@/lib/insforge-server'
+import BookingWizard from './BookingWizard'
 
 export const revalidate = 60 // Revalidate every minute
 
@@ -107,19 +108,8 @@ export default async function PublicTenantPage({ params }: { params: Promise<{ s
           </div>
         </div>
 
-        {/* Future Booking Module Placeholder */}
-        <div style={{ background: 'var(--color-glass)', border: '1px solid var(--color-glass-border)', padding: '2.5rem', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
-          <h2 style={{ fontSize: '1.5rem', fontFamily: fontVar, marginBottom: '1rem', color: 'var(--color-text-primary)' }}>
-            Reserva tu Cita
-          </h2>
-          <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>
-            Selecciona el servicio y tu barbero de preferencia.
-          </p>
-
-          <button style={{ background: primaryColor, color: '#000', border: 'none', padding: '1rem 2.5rem', borderRadius: 'var(--radius-md)', fontSize: '1.1rem', fontWeight: 700, cursor: 'not-allowed', opacity: 0.8 }}>
-            Próximamente
-          </button>
-        </div>
+        {/* Interactive Booking Module */}
+        <BookingWizard tenant={tenant} primaryColor={primaryColor} />
 
       </div>
       
