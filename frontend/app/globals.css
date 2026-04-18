@@ -806,6 +806,58 @@ a {
   border: 1px solid var(--color-glass-border);
 }
 
+/* ============================================================
+   SETTINGS LAYOUT
+   ============================================================ */
+.settings-section {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 2.5rem;
+  margin-bottom: 3.5rem;
+  align-items: start;
+}
+
+.settings-section-info h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.settings-section-info p {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.settings-section-card {
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 800px) {
+  .settings-section {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .dashboard-module-card.clickable {
   cursor: pointer;
   border: 1px solid rgba(255,255,255,0.1);

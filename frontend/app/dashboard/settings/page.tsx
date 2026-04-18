@@ -24,10 +24,15 @@ export default async function SettingsServerWrapper() {
     .single()
 
   return (
-    <div>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '1.875rem', marginBottom: '1.5rem', fontWeight: 700 }}>
-        Personalizar Sitio
-      </h1>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '4rem' }}>
+      <header style={{ marginBottom: '2.5rem' }}>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 700, color: 'var(--color-text-primary)', letterSpacing: '-0.02em', marginBottom: '0.4rem' }}>
+          Personalizar Sitio
+        </h1>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.05rem' }}>
+          Administra la identidad gráfica, el diseño y las vías de contacto público de tu negocio.
+        </p>
+      </header>
       <ClientPage tenant={tenant} />
     </div>
   )
