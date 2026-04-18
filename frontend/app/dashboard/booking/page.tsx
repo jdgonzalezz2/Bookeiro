@@ -28,14 +28,12 @@ export default async function BookingDashboardPage() {
   const pastAppointments = appointments?.filter((a: any) => new Date(a.start_time).getTime() < Date.now()) || []
 
   return (
-    <div style={{ maxWidth: 900 }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <Link href="/dashboard" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontSize: '0.9rem' }}>
-          ← Volver al Dashboard
-        </Link>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', marginTop: '0.5rem' }}>Agenda de Reservas</h1>
-        <p style={{ color: 'var(--color-text-secondary)' }}>Controla y visualiza todas las citas agendadas por tus clientes en tiempo real.</p>
-      </div>
+    <div className="dashboard-container">
+      
+      <header className="dashboard-page-header">
+        <h1 className="dashboard-page-title">Agenda de Reservas</h1>
+        <p className="dashboard-page-desc">Controla y visualiza todas las citas agendadas por tus clientes en tiempo real.</p>
+      </header>
 
       <h2 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-display)', margin: '2rem 0 1rem' }}>Citas Próximas</h2>
       <div style={{ display: 'grid', gap: '1rem' }}>

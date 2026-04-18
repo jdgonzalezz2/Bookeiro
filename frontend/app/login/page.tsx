@@ -132,7 +132,7 @@ function LoginForm() {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary" disabled={isPending || oauthPending}>
+            <button type="submit" className="btn btn-primary btn-block" disabled={isPending || oauthPending}>
               {isPending ? (
                 <><span className="spinner" /> Iniciando sesión...</>
               ) : (

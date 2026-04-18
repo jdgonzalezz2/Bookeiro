@@ -22,17 +22,14 @@ export default async function StaffPage() {
     .order('created_at', { ascending: true })
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      {/* Encabezado con Pan de Migas / Nav Volver */}
-      <div style={{ marginBottom: '2rem' }}>
-        <Link href="/dashboard" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontSize: '0.9rem' }}>
-          ← Volver al Dashboard
-        </Link>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div className="dashboard-container">
+      
+      <header className="dashboard-page-header">
+        <h1 className="dashboard-page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <Users size={32} /> Personal y Barberos
         </h1>
-        <p style={{ color: 'var(--color-text-secondary)' }}>Administra tu equipo de trabajo y sus horarios.</p>
-      </div>
+        <p className="dashboard-page-desc">Administra tu equipo de trabajo, sus horarios y vinculaciones.</p>
+      </header>
 
       {/* Acción Nuevo Personal */}
       <CreateStaffClient />

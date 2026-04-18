@@ -1,10 +1,18 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getCurrentProfile } from '@/lib/auth'
 import { createInsForgeServerClient } from '@/lib/insforge-server'
 import { getAccessToken } from '@/lib/cookies'
+import DashboardShell from './DashboardShell'
+
+export const metadata: Metadata = { title: 'Dashboard - Bookeiro' }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const profile = await getCurrentProfile()
+
+  if (!profile) {
+    redirect('/login')
+  }
 
   if (profile && !profile.tenant_id) {
     // Magic Link Interception: Check if user has a pending invite
@@ -27,11 +35,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect('/onboarding')
   }
 
-  // RBAC Redirection: If staff tries to access owner pages, keep them in worker view
-  if (profile?.role === 'barber') {
-    // Only intercept if we are strictly at `/dashboard` or trying to access owner subfolders.
-    // We will handle this in Next.js middleware, but here is a simple check.
+  // Fetch tenant info for Sidebar using InsForge
+  let tenant = null
+  const accessToken = await getAccessToken()
+  if (accessToken && profile.tenant_id) {
+    const insforge = createInsForgeServerClient(accessToken)
+    const { data } = await insforge.database
+    .from('tenants')
+    .select('name, slug, logo_url')
+    .eq('id', profile.tenant_id)
+    .single()
+    tenant = data
   }
 
-  return <>{children}</>
+  return (
+    <DashboardShell profile={profile} tenant={tenant}>
+      {children}
+    </DashboardShell>
+  )
 }

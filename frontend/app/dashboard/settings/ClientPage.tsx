@@ -135,15 +135,18 @@ export default function ClientPage({ tenant }: { tenant: any }) {
   ]
 
   return (
-    <div style={{ 
-      width: '100%', 
-      maxWidth: step === 1 ? '800px' : '1100px', 
-      margin: '0 auto', 
-      display: 'flex', 
-      flexWrap: 'wrap', 
-      gap: '2.5rem', 
-      transition: 'max-width 0.3s ease' 
-    }}>
+    <div className="dashboard-container">
+      
+      <header className="dashboard-page-header">
+        <h1 className="dashboard-page-title">Diseño del Portal</h1>
+        <p className="dashboard-page-desc">Personaliza la experiencia visual de tus clientes y la identidad de tu marca.</p>
+      </header>
+
+      <div style={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        gap: '2.5rem'
+      }}>
       <div style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
       {message && (
         <div className={`alert alert-${message.type}`} style={{ marginBottom: '2rem' }}>
@@ -473,6 +476,8 @@ export default function ClientPage({ tenant }: { tenant: any }) {
         </div>
       )}
 
+    </div>
+
       {/* -- Modal de Éxito -- */}
       {showSuccessModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fade-in 0.2s ease' }}>
@@ -485,10 +490,10 @@ export default function ClientPage({ tenant }: { tenant: any }) {
               Tu configuración ha sido guardada con éxito. Ya puedes ver cómo luce en vivo o volver a tu panel principal.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <Link href={`/${tenant.slug}`} target="_blank" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'var(--color-primary)', color: '#fff', padding: '0.875rem', borderRadius: 'var(--radius-md)', fontWeight: 600, textDecoration: 'none' }}>
+              <Link href={`/${tenant.slug}`} target="_blank" className="btn-block" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'var(--color-primary)', color: '#fff', padding: '0.875rem', borderRadius: 'var(--radius-md)', fontWeight: 600, textDecoration: 'none' }}>
                 <ExternalLink size={18} /> Ver mi página pública
               </Link>
-              <button type="button" onClick={() => router.push('/dashboard')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', padding: '0.875rem', borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: 'pointer' }}>
+              <button type="button" onClick={() => router.push('/dashboard')} className="btn-block" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', padding: '0.875rem', borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: 'pointer' }}>
                 <LayoutDashboard size={18} /> Volver al Dashboard
               </button>
               <button type="button" onClick={() => setShowSuccessModal(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', color: 'var(--color-text-secondary)', padding: '0.5rem', marginTop: '0.5rem', fontWeight: 500, cursor: 'pointer', textDecoration: 'underline' }}>

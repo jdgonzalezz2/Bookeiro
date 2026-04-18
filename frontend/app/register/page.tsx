@@ -160,7 +160,7 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                <button type="submit" className="btn btn-primary" disabled={isSigningUp}>
+                <button type="submit" className="btn btn-primary btn-block" disabled={isSigningUp}>
                   {isSigningUp ? (
                     <><span className="spinner" /> Creando cuenta...</>
                   ) : (
@@ -230,7 +230,7 @@ export default function RegisterPage() {
 
                 <button
                   type="submit"
-                  className="btn btn-primary"
+                  className="btn btn-primary btn-block"
                   style={{ marginTop: '0.5rem' }}
                   disabled={isVerifying}
                 >

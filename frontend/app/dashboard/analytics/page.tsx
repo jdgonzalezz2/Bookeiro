@@ -32,21 +32,16 @@ export default async function AnalyticsPage() {
     .order('start_time', { ascending: true })
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
+    <div className="dashboard-container">
       
-      {/* HEADER */}
-      <div style={{ marginBottom: '2.5rem' }}>
-        <Link href="/dashboard" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontSize: '0.9rem' }}>
-          ← Volver al Comando Central
-        </Link>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <BarChart3 size={32} className="text-primary" />
-          Inteligencia de Negocio
+      <header className="dashboard-page-header">
+        <h1 className="dashboard-page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <BarChart3 size={32} /> Inteligencia de Negocio
         </h1>
-        <p style={{ color: 'var(--color-text-secondary)', marginTop: '0.2rem' }}>
+        <p className="dashboard-page-desc">
           Métricas financieras y operativas analizadas en tiempo real. 
         </p>
-      </div>
+      </header>
 
       <AnalyticsClient initialData={appointments || []} />
     </div>

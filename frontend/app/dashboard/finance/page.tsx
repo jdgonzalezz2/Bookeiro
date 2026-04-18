@@ -36,21 +36,16 @@ export default async function FinancePage() {
     .order('start_time', { ascending: false })
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2rem 1rem' }}>
+    <div className="dashboard-container">
       
-      {/* HEADER */}
-      <div style={{ marginBottom: '2.5rem' }}>
-        <Link href="/dashboard" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontSize: '0.9rem' }}>
-          ← Volver al Comando Central
-        </Link>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <CreditCard size={32} className="text-primary" />
-          Pasarela Financiera
+      <header className="dashboard-page-header">
+        <h1 className="dashboard-page-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <CreditCard size={32} /> Pasarela Financiera
         </h1>
-        <p style={{ color: 'var(--color-text-secondary)', marginTop: '0.2rem' }}>
-          Administra los fondos cobrados por adelantado (50%) a través de reservas web.
+        <p className="dashboard-page-desc">
+          Administra los fondos cobrados por adelantado (50%) a través de tus reservas web.
         </p>
-      </div>
+      </header>
 
       <FinanceClient appointments={appointments || []} />
     </div>

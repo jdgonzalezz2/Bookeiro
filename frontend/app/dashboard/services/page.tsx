@@ -21,15 +21,12 @@ export default async function ServicesPage() {
     .order('created_at', { ascending: true })
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      {/* Encabezado */}
-      <div style={{ marginBottom: '2rem' }}>
-        <Link href="/dashboard" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontSize: '0.9rem' }}>
-          ← Volver al Dashboard
-        </Link>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', marginTop: '0.5rem' }}>Servicios y Precios</h1>
-        <p style={{ color: 'var(--color-text-secondary)' }}>Configura los servicios que tus clientes pueden agendar.</p>
-      </div>
+    <div className="dashboard-container">
+      
+      <header className="dashboard-page-header">
+        <h1 className="dashboard-page-title">Servicios y Precios</h1>
+        <p className="dashboard-page-desc">Configura los servicios que tus clientes pueden agendar en tu portal.</p>
+      </header>
 
       <CreateServiceClient />
 
