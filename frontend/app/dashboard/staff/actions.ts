@@ -21,14 +21,37 @@ export async function createStaffAction(name: string, invite_email: string) {
   try {
     const { insforge, tenantId } = await getClientAndTenant()
     
+    // Fetch tenant name for the invitation
+    const { data: tenant } = await insforge.database.from('tenants').select('name').eq('id', tenantId).single()
+    const tenantName = tenant?.name || 'Bookeiro'
+
     const payload: any = { tenant_id: tenantId, name }
     if (invite_email.trim()) payload.invite_email = invite_email.trim()
 
-    const { error } = await insforge.database
+    const { error: dbError } = await insforge.database
       .from('staff')
       .insert(payload)
       
-    if (error) return { error: error.message }
+    if (dbError) return { error: dbError.message }
+
+    // 🔥 Native Invitation via InsMessage
+    if (invite_email.trim()) {
+      try {
+        await insforge.functions.invoke('insmessage', {
+          body: {
+            type: 'staff_invite',
+            payload: {
+              email: invite_email.trim(),
+              staffName: name,
+              tenantName: tenantName
+            }
+          }
+        })
+      } catch (msgErr) {
+        console.error('Failed to trigger insmessage:', msgErr)
+        // We don't block the UI if the email fails, the record is already in DB
+      }
+    }
     
     revalidatePath('/dashboard/staff')
     return { success: true }

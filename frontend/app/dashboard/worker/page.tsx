@@ -69,101 +69,157 @@ export default async function WorkerDashboardPage() {
   const todayTotal = todayAppointments.reduce((acc, curr) => acc + Number(curr.base_price || 0), 0)
 
   return (
-    <div className="dashboard-root" style={{ background: 'var(--color-bg-base)' }}>
-      {/* ── Navbar ── */}
-      <nav className="dashboard-nav" style={{ borderBottom: '1px solid var(--color-glass-border)' }}>
-        <div className="nav-logo">
-          <div className="nav-logo-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Scissors size={20} />
-          </div>
-          <span className="nav-logo-name">{tenant?.name} <span style={{fontSize:'0.8rem', opacity:0.7}}>(Portal Vendedor)</span></span>
-        </div>
-        <div className="nav-user">
-          <div className="nav-user-info">
-            <div className="nav-user-name">{myStaffRecord.name.split(' ')[0]}</div>
-            <div className="nav-user-email">Barbero</div>
-          </div>
-          <form action={signOutAction}>
-            <button type="submit" className="btn btn-ghost btn-signout" title="Cerrar sesión" style={{ padding: '0.4rem' }}>
-              <LogOut size={20} />
-            </button>
-          </form>
-        </div>
-      </nav>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '1rem 0 3rem' }}>
+      
+      {/* Welcome & Profile Summary */}
+      <div style={{
+        background: 'var(--color-bg-card)', 
+        border: '1px solid var(--color-border)',
+        borderRadius: '20px', 
+        padding: '2.5rem', 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '2rem', 
+        marginBottom: '2.5rem',
+        boxShadow: 'var(--shadow-md)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Decorative Background Element */}
+        <div style={{ 
+          position: 'absolute', top: -50, right: -50, width: 200, height: 200, 
+          background: 'var(--color-primary)', opacity: 0.03, borderRadius: '50%' 
+        }} />
 
-      {/* ── Content ── */}
-      <main className="dashboard-content" style={{ maxWidth: '1000px', margin: '0 auto', padding: '2rem' }}>
-        
-        {/* Welcome Card */}
-        <div style={{
-          background: 'var(--color-glass)', border: '1px solid var(--color-glass-border)',
-          borderRadius: '16px', padding: '2rem', display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem', flexWrap: 'wrap'
+        <div style={{ 
+          width: 90, height: 90, borderRadius: '50%', 
+          background: 'var(--color-bg-surface)', 
+          display: 'flex', alignItems: 'center', justifyContent: 'center', 
+          border: '2px solid var(--color-primary)',
+          boxShadow: '0 0 20px rgba(201,168,76,0.1)',
+          flexShrink: 0
         }}>
-          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-border)' }}>
-            <UserRound size={40} className="text-gray-400" />
-          </div>
-          <div>
-            <h1 style={{ fontSize: '2rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>Hola, {myStaffRecord.name.split(' ')[0]}</h1>
-            <p style={{ color: 'var(--color-text-secondary)', marginTop: '0.4rem' }}>Aquí está tu agenda de trabajo.</p>
-          </div>
+          <UserRound size={44} style={{ color: 'var(--color-primary)' }} />
         </div>
-
-        {/* Stats Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-          <div style={{ background: 'var(--color-glass)', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', borderLeft: '4px solid #3b82f6' }}>
-            <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem' }}>CITAS PARA HOY</div>
-            <div style={{ fontSize: '2rem', fontWeight: 800 }}>{todayAppointments.length}</div>
-          </div>
-          <div style={{ background: 'var(--color-glass)', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', borderLeft: '4px solid #2ecc71' }}>
-            <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem' }}>PRODUCIDO HOY (Est.)</div>
-            <div style={{ fontSize: '2rem', fontWeight: 800, color: '#2ecc71' }}>${todayTotal.toLocaleString()}</div>
-          </div>
-          <div style={{ background: 'var(--color-glass)', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', borderLeft: '4px solid #f39c12' }}>
-            <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', fontWeight: 600, marginBottom: '0.5rem' }}>PRÓXIMOS DÍAS</div>
-            <div style={{ fontSize: '2rem', fontWeight: 800 }}>{(appointments?.length || 0) - todayAppointments.length}</div>
-          </div>
-        </div>
-
-        {/* Appointments List */}
-        <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>Tu Agenda Activa</h2>
         
-        {formattedAppointments.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--color-glass)', borderRadius: 'var(--radius-md)', color: 'var(--color-text-muted)' }}>
-            No tienes citas agendadas por el momento.
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+            <span style={{ 
+              fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', 
+              letterSpacing: '0.1em', background: 'rgba(201,168,76,0.1)', 
+              color: 'var(--color-primary)', padding: '0.3rem 0.8rem', borderRadius: '100px' 
+            }}>
+              Portal de Empleado
+            </span>
           </div>
-        ) : (
-          <div style={{ display: 'grid', gap: '1rem' }}>
-            {formattedAppointments.map(app => (
-              <div key={app.id} style={{ 
-                background: app.appointment_date === todayStr ? 'rgba(59, 130, 246, 0.05)' : 'var(--color-glass)', 
-                border: app.appointment_date === todayStr ? '1px solid #3b82f6' : '1px solid var(--color-border)', 
-                padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' 
-              }}>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.5rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '1.2rem', color: app.appointment_date === todayStr ? '#3b82f6' : 'inherit' }}>
-                      {app.start_time_str}
-                    </span>
-                    {app.appointment_date === todayStr && <span style={{ background: '#3b82f6', color: '#fff', fontSize: '0.7rem', padding: '0.2rem 0.5rem', borderRadius: '12px', fontWeight: 600 }}>Hoy</span>}
-                    {app.appointment_date !== todayStr && <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{app.appointment_date}</span>}
+          <h1 style={{ fontSize: '2.25rem', fontWeight: 800, margin: 0, letterSpacing: '-0.03em', color: 'var(--color-text-primary)' }}>
+            Hola, {myStaffRecord!.name.split(' ')[0]}
+          </h1>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.05rem', marginTop: '0.5rem' }}>
+            Gestiona tus citas de hoy en <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{tenant?.name}</span>.
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+           <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>{new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
+        </div>
+      </div>
+
+      {/* Stats Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', marginBottom: '3.5rem' }}>
+        <div style={{ background: 'var(--color-bg-card)', padding: '1.75rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', background: '#3b82f6' }} />
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.75rem', letterSpacing: '0.05em' }}>CITAS PARA HOY</div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>{todayAppointments.length}</div>
+        </div>
+        
+        <div style={{ background: 'var(--color-bg-card)', padding: '1.75rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', background: '#10B981' }} />
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.75rem', letterSpacing: '0.05em' }}>PRODUCIDO ESTIMADO</div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#10B981' }}>${todayTotal.toLocaleString()}</div>
+        </div>
+
+        <div style={{ background: 'var(--color-bg-card)', padding: '1.75rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '4px', background: 'var(--color-primary)' }} />
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.75rem', letterSpacing: '0.05em' }}>PRÓXIMAS CITAS</div>
+          <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>{(appointments?.length || 0) - todayAppointments.length}</div>
+        </div>
+      </div>
+
+      {/* Appointments List */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--color-border)' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: 'var(--color-text-primary)' }}>
+          Tu Agenda Activa
+        </h2>
+        <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+          {formattedAppointments.length} citas encontradas
+        </div>
+      </div>
+      
+      {formattedAppointments.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '5rem 2rem', background: 'var(--color-bg-surface)', borderRadius: 'var(--radius-lg)', color: 'var(--color-text-muted)', border: '1px dashed var(--color-border)' }}>
+          <Calendar size={48} style={{ marginBottom: '1rem', opacity: 0.3 }} />
+          <p style={{ fontSize: '1.1rem' }}>No tienes citas agendadas por el momento.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: '1.25rem' }}>
+          {formattedAppointments.map(app => (
+            <div key={app.id} style={{ 
+              background: 'var(--color-bg-card)', 
+              border: '1px solid var(--color-border)', 
+              padding: '1.75rem', 
+              borderRadius: 'var(--radius-lg)', 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              flexWrap: 'wrap', 
+              gap: '1.5rem',
+              transition: 'all 0.2s ease',
+              boxShadow: app.appointment_date === todayStr ? '0 4px 20px rgba(59, 130, 246, 0.08)' : 'none',
+              borderColor: app.appointment_date === todayStr ? '#3b82f6' : 'var(--color-border)'
+            }}>
+              <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+                <div style={{ textAlign: 'center', minWidth: '80px', padding: '0.75rem', background: 'var(--color-bg-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+                  <div style={{ fontWeight: 800, fontSize: '1.25rem', color: app.appointment_date === todayStr ? '#3b82f6' : 'var(--color-text-primary)' }}>
+                    {app.start_time_str}
                   </div>
-                  <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{app.customer_name}</div>
-                  <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Phone size={14} /> {app.customer_phone}
+                  <div style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', marginTop: '0.2rem', color: 'var(--color-text-secondary)' }}>
+                    {app.appointment_date === todayStr ? 'Hoy' : app.appointment_date}
                   </div>
                 </div>
 
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 600 }}>{(app.services as any)?.name || 'Servicio'}</div>
-                  <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem', justifyContent: 'flex-end' }}><Clock size={12}/> {(app.services as any)?.duration_mins || 0} min</div>
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '0.2rem', justifyContent: 'flex-end' }}><DollarSign size={16}/> {app.base_price}</div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '1.15rem', color: 'var(--color-text-primary)', marginBottom: '0.25rem' }}>{app.customer_name}</div>
+                  <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--color-bg-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Phone size={12} />
+                    </div>
+                    {app.customer_phone}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
 
-      </main>
+              <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{ 
+                  fontWeight: 700, fontSize: '1rem', color: 'var(--color-text-primary)', 
+                  padding: '0.4rem 0.8rem', background: 'var(--color-bg-surface)', borderRadius: '8px', 
+                  display: 'inline-block' 
+                }}>
+                  {(app.services as any)?.name || 'Servicio'}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', justifyContent: 'flex-end' }}>
+                  <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <Clock size={14}/> {(app.services as any)?.duration_mins || 0} min
+                  </div>
+                  <div style={{ fontWeight: 800, fontSize: '1.15rem', color: '#10B981' }}>
+                    ${app.base_price?.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -8,18 +8,21 @@ export default function CreateStaffClient() {
   const [name, setName] = useState('')
   const [inviteEmail, setInviteEmail] = useState('')
   const [isSaving, setIsSaving] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
+  const [successMsg, setSuccessMsg] = useState('')
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
     setIsSaving(true)
+    setSuccessMsg('')
     
     const res = await createStaffAction(name, inviteEmail)
     if (res.success) {
+      setSuccessMsg(`¡${name} añadido! ` + (inviteEmail ? `Invitación enviada a ${inviteEmail}` : ''))
       setName('')
       setInviteEmail('')
-      setIsOpen(false)
+      // Auto-clear success message after 5 seconds
+      setTimeout(() => setSuccessMsg(''), 5000)
     } else {
       alert('Error: ' + res.error)
     }
@@ -28,7 +31,25 @@ export default function CreateStaffClient() {
   }
 
   return (
-    <div className="auth-card" style={{ maxWidth: '100%', padding: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+      {successMsg && (
+        <div style={{ 
+          background: 'rgba(16, 185, 129, 0.1)', 
+          border: '1px solid rgba(16, 185, 129, 0.2)', 
+          color: '#10B981', 
+          padding: '1rem', 
+          borderRadius: 'var(--radius-lg)', 
+          fontSize: '0.9rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          animation: 'fadeIn 0.3s ease-out'
+        }}>
+          ✅ {successMsg}
+        </div>
+      )}
+
+      <div className="auth-card" style={{ maxWidth: '100%', padding: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
       <div style={{ flex: 1, minWidth: '200px' }}>
         <label className="form-label">Añadir Nuevo Profesional</label>
         <input 
@@ -49,5 +70,6 @@ export default function CreateStaffClient() {
         {isSaving ? 'Añadiendo...' : <><Plus size={16} /> Añadir</>}
       </button>
     </div>
+  </div>
   )
 }
