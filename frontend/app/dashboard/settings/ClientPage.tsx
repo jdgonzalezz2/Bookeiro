@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { saveSettingsAction, uploadImageAction, generateImageFromAIAction } from './actions'
-import { Check, ChevronRight, Sparkles, Palette } from 'lucide-react'
+import { Check, ChevronRight, Sparkles, Palette, ExternalLink, LayoutDashboard } from 'lucide-react'
 import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/style.css'
 
@@ -15,6 +17,8 @@ const COLOR_PRESETS = [
 ]
 
 export default function ClientPage({ tenant }: { tenant: any }) {
+  const router = useRouter()
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [step, setStep] = useState(1)
   const [isUploadingLogo, setIsUploadingLogo] = useState(false)
   const [isUploadingCover, setIsUploadingCover] = useState(false)
@@ -115,7 +119,7 @@ export default function ClientPage({ tenant }: { tenant: any }) {
     if (result.error) {
       setMessage({ text: 'Error al guardar configuración: ' + result.error, type: 'error' })
     } else {
-      setMessage({ text: '✅ Todos los cambios guardados correctamente.', type: 'success' })
+      setShowSuccessModal(true)
     }
     setIsSaving(false)
   }
@@ -176,7 +180,7 @@ export default function ClientPage({ tenant }: { tenant: any }) {
         })}
       </div>
 
-      <form onSubmit={handleSaveAll}>
+      <form onSubmit={(e) => e.preventDefault()}>
 
         {/* -- Sección 1: Estructura -- */}
         {step === 1 && (
@@ -453,7 +457,7 @@ export default function ClientPage({ tenant }: { tenant: any }) {
               Siguiente Paso <ChevronRight size={18} />
             </button>
           ) : (
-            <button type="submit" className="btn btn-primary" disabled={isSaving} style={{ padding: '0.75rem 2rem', fontWeight: 600, background: 'var(--color-text-primary)', color: 'var(--color-bg-base)' }}>
+            <button type="button" onClick={handleSaveAll} className="btn btn-primary" disabled={isSaving} style={{ padding: '0.75rem 2rem', fontWeight: 600, background: 'var(--color-text-primary)', color: 'var(--color-bg-base)' }}>
               {isSaving ? 'Guardando...' : 'Guardar y Finalizar'}
             </button>
           )}
@@ -465,14 +469,40 @@ export default function ClientPage({ tenant }: { tenant: any }) {
       {/* -- Live Preview -- */}
       {step >= 2 && (
         <div style={{ flex: '1 1 350px', position: 'sticky', top: '1rem', height: 'fit-content' }}>
-          <LivePreview formData={formData} logoUrl={logoUrl} coverUrl={coverUrl} tenantName={tenant?.name || 'Mi Negocio'} />
+          <LivePreview formData={formData} logoUrl={logoUrl} coverUrl={coverUrl} tenantName={tenant?.name || 'Mi Negocio'} tenantSlug={tenant?.slug || 'minegocio'} />
+        </div>
+      )}
+
+      {/* -- Modal de Éxito -- */}
+      {showSuccessModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fade-in 0.2s ease' }}>
+          <div style={{ background: 'var(--color-bg-base)', borderRadius: 'var(--radius-lg)', padding: '2.5rem', width: '90%', maxWidth: 450, textAlign: 'center', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+            <div style={{ width: 64, height: 64, background: '#10B981', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+              <Check size={32} />
+            </div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>¡Portal Publicado!</h2>
+            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '2rem' }}>
+              Tu configuración ha sido guardada con éxito. Ya puedes ver cómo luce en vivo o volver a tu panel principal.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <Link href={`/${tenant.slug}`} target="_blank" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'var(--color-primary)', color: '#fff', padding: '0.875rem', borderRadius: 'var(--radius-md)', fontWeight: 600, textDecoration: 'none' }}>
+                <ExternalLink size={18} /> Ver mi página pública
+              </Link>
+              <button type="button" onClick={() => router.push('/dashboard')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', padding: '0.875rem', borderRadius: 'var(--radius-md)', fontWeight: 600, cursor: 'pointer' }}>
+                <LayoutDashboard size={18} /> Volver al Dashboard
+              </button>
+              <button type="button" onClick={() => setShowSuccessModal(false)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', color: 'var(--color-text-secondary)', padding: '0.5rem', marginTop: '0.5rem', fontWeight: 500, cursor: 'pointer', textDecoration: 'underline' }}>
+                Cerrar y seguir editando
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
   )
 }
 
-function LivePreview({ formData, logoUrl, coverUrl, tenantName }: { formData: any, logoUrl: string, coverUrl: string, tenantName: string }) {
+function LivePreview({ formData, logoUrl, coverUrl, tenantName, tenantSlug }: { formData: any, logoUrl: string, coverUrl: string, tenantName: string, tenantSlug: string }) {
   const isDark = formData.theme === 'dark'
   const bgColor = isDark ? '#111827' : '#FFFFFF'
   const textColor = isDark ? '#F9FAFB' : '#111827'
@@ -547,9 +577,9 @@ function LivePreview({ formData, logoUrl, coverUrl, tenantName }: { formData: an
         <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f56' }} />
         <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e' }} />
         <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#27c93f' }} />
-        <div style={{ marginLeft: '1rem', flex: 1, height: 20, background: 'var(--color-bg-base)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', color: 'var(--color-text-muted)' }}>
-          bookeiro.com/{tenantName.toLowerCase().replace(/\s+/g,'')}
-        </div>
+        <a href={`/${tenantSlug}`} target="_blank" rel="noopener noreferrer" style={{ marginLeft: '1rem', flex: 1, height: 20, background: 'var(--color-bg-base)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontSize: '0.6rem', color: 'var(--color-text-muted)', textDecoration: 'none', cursor: 'pointer' }}>
+          bookeiro.com/{tenantSlug} <ExternalLink size={10} />
+        </a>
       </div>
 
       {/* Viewport */}
@@ -563,7 +593,7 @@ function LivePreview({ formData, logoUrl, coverUrl, tenantName }: { formData: an
         
         {formData.layout_style === 'classic' && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ height: 160, background: coverBg, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+            <div style={{ height: 160, backgroundImage: coverBg, backgroundSize: 'cover', backgroundPosition: 'center' }} />
             <div style={{ padding: '0 1.5rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
               <div style={{ marginTop: -32, marginBottom: '1rem' }}><LogoEl size={64} /></div>
               <InfoEl />
@@ -574,7 +604,7 @@ function LivePreview({ formData, logoUrl, coverUrl, tenantName }: { formData: an
 
         {formData.layout_style === 'split' && (
           <div style={{ display: 'flex', height: '100%' }}>
-            <div style={{ width: '40%', background: coverBg, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: 500 }} />
+            <div style={{ width: '40%', backgroundImage: coverBg, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: 500 }} />
             <div style={{ width: '60%', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
               <div style={{ marginBottom: '1rem' }}><LogoEl size={48} /></div>
               <InfoEl />
