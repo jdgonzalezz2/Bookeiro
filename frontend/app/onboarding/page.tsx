@@ -3,10 +3,13 @@
 import { useActionState, useState } from 'react'
 import { createTenantAction } from './actions'
 import { Scissors } from 'lucide-react'
+import PhoneInput from 'react-phone-input-2'
+import 'react-phone-input-2/lib/style.css'
 
 export default function OnboardingPage() {
   const [state, formAction, isPending] = useActionState(createTenantAction, null)
   const [slug, setSlug] = useState('')
+  const [phone, setPhone] = useState<string>('')
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Auto-generate slug from name if the user hasn't typed in the slug field yet
@@ -109,12 +112,18 @@ export default function OnboardingPage() {
 
             <div className="form-group">
               <label className="form-label" htmlFor="tenant-phone">Número de Teléfono (Opcional)</label>
-              <input
-                id="tenant-phone"
-                name="phone"
-                type="tel"
+              <input type="hidden" name="phone" value={phone || ''} />
+              <PhoneInput
+                country={'co'}
+                enableSearch={true}
+                searchPlaceholder="Buscar país..."
+                searchNotFound="No encontrado"
                 placeholder="+57 300 000 0000"
-                className="form-input"
+                value={phone}
+                onChange={(val) => setPhone(val)}
+                inputClass="form-input"
+                containerClass="phone-input-override-2"
+                countryCodeEditable={false}
               />
             </div>
 

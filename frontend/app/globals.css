@@ -98,19 +98,35 @@ a {
    AUTH LAYOUT
    ============================================================ */
 .auth-page {
+  /* Landing Light Theme Overrides */
+  --color-bg-base:         #ffffff;
+  --color-bg-surface:      #fafaf5;
+  --color-bg-card:         #ffffff;
+  --color-text-primary:    #141418;
+  --color-text-secondary:  #4a4a52;
+  --color-text-muted:      #8a8a92;
+  --color-border:          #ececec;
+  --color-border-focus:    #c9a84c;
+  --gradient-dark:         #ffffff;
+  --gradient-glow:         radial-gradient(circle at 80% 0%, rgba(201, 168, 76, 0.08), transparent 45%), radial-gradient(circle at 0% 60%, rgba(106, 122, 98, 0.05), transparent 50%);
+  --shadow-lg:             0 20px 50px -20px rgba(20, 20, 24, 0.15);
+  --color-glass:           #ffffff;
+  --color-glass-border:    #ececec;
+
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
   background: var(--gradient-dark);
   position: relative;
   overflow: hidden;
+  color: var(--color-text-primary);
 }
 
 .auth-page::before {
   content: '';
   position: fixed;
   inset: 0;
-  background: var(--gradient-glow);
+  background-image: var(--gradient-glow);
   pointer-events: none;
   z-index: 0;
 }
@@ -265,6 +281,50 @@ a {
   letter-spacing: 0.02em;
 }
 
+/* PhoneInput-2 Overrides */
+.phone-input-override-2 {
+  position: relative;
+  width: 100%;
+}
+.phone-input-override-2 .form-input {
+  width: 100%;
+  padding-left: 3rem !important; /* give space for flag/dialcode */
+}
+.phone-input-override-2 .flag-dropdown {
+  background: transparent !important;
+  border: none !important;
+  border-right: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) 0 0 var(--radius-md) !important;
+}
+.phone-input-override-2 .selected-flag {
+  border-radius: var(--radius-md) 0 0 var(--radius-md) !important;
+}
+.phone-input-override-2 .selected-flag:hover, 
+.phone-input-override-2 .selected-flag:focus {
+  background: rgba(0,0,0,0.03) !important;
+}
+.phone-input-override-2 .country-list {
+  background: var(--color-bg-base) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  color: var(--color-text-primary) !important;
+}
+.phone-input-override-2 .country-list .country:hover,
+.phone-input-override-2 .country-list .country.highlight {
+  background: var(--color-bg-surface) !important;
+}
+.phone-input-override-2 .search {
+  background: var(--color-bg-surface) !important;
+  padding: 0.5rem 0.75rem !important;
+}
+.phone-input-override-2 .search-box {
+  background: var(--color-bg-base) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
 .form-input {
   width: 100%;
   background: rgba(255,255,255,0.04);
@@ -298,6 +358,20 @@ a {
   box-shadow: 0 0 0 3px rgba(255,77,109,0.1);
 }
 
+/* Light theme overrides for form inputs */
+.auth-page .form-input {
+  background: #ffffff;
+}
+.auth-page .form-input:hover {
+  background: #fafaf5;
+  border-color: #d1d1d1;
+}
+.auth-page .form-input:focus {
+  background: rgba(201,168,76,0.04);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+}
+
 /* OTP Input */
 .otp-inputs {
   display: flex;
@@ -324,6 +398,14 @@ a {
 .otp-input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+  background: rgba(201,168,76,0.04);
+}
+
+/* Light theme overrides for OTP */
+.auth-page .otp-input {
+  background: #ffffff;
+}
+.auth-page .otp-input:focus {
   background: rgba(201,168,76,0.04);
 }
 
@@ -401,6 +483,16 @@ a {
 .btn-oauth:hover {
   background: rgba(255,255,255,0.08);
   border-color: rgba(255,255,255,0.15);
+}
+
+/* Light theme overrides for OAuth button */
+.auth-page .btn-oauth {
+  background: #ffffff;
+  border-color: #ececec;
+}
+.auth-page .btn-oauth:hover {
+  background: #fafaf5;
+  border-color: #d1d1d1;
 }
 
 /* ============================================================
