@@ -335,6 +335,46 @@ a {
   border-radius: var(--radius-sm) !important;
 }
 
+/* Dashboard Specific Phone Input */
+.phone-input-dashboard .phone-input-field {
+  background: var(--color-bg-surface) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border) !important;
+  width: 100% !important;
+  height: 48px !important;
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 0.95rem !important;
+}
+
+.dark .phone-input-dashboard .phone-input-field {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.phone-input-dashboard .phone-input-button {
+  background: var(--color-bg-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) 0 0 var(--radius-md) !important;
+}
+
+.dark .phone-input-dashboard .phone-input-button {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.phone-input-dashboard .country-list {
+  background: var(--color-bg-card) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.dark .phone-input-dashboard .country-list .country:hover,
+.dark .phone-input-dashboard .country-list .country.highlight {
+  background: var(--color-bg-hover) !important;
+}
+
 .form-input {
   width: 100%;
   background: var(--color-bg-surface);

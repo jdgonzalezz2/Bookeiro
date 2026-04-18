@@ -3,21 +3,46 @@
 import { createInsForgeServerClient } from '@/lib/insforge-server'
 import { getAccessToken } from '@/lib/cookies'
 
+// Whitelist of valid columns for the tenants table to prevent PostgREST errors
+const VALID_TENANT_COLUMNS = [
+  'name', 'slug', 'description', 'address', 'phone', 'whatsapp', 
+  'instagram', 'facebook', 'tiktok', 'map_url', 'logo_url', 
+  'cover_image_url', 'theme', 'primary_color', 'font_family', 
+  'layout_style', 'tags'
+]
+
 export async function saveSettingsAction(tenantId: string, data: any) {
-  const accessToken = await getAccessToken()
-  if (!accessToken) return { error: 'No tienes sesión activa.' }
+  try {
+    const accessToken = await getAccessToken()
+    if (!accessToken) return { error: 'No tienes sesión activa.' }
 
-  const insforge = createInsForgeServerClient(accessToken)
-  
-  const { error } = await insforge.database
-    .from('tenants')
-    .update(data)
-    .eq('id', tenantId)
+    const insforge = createInsForgeServerClient(accessToken)
+    
+    // Sanitize data: only keep fields that exist in the database
+    const sanitizedData: any = {}
+    Object.keys(data).forEach(key => {
+      if (VALID_TENANT_COLUMNS.includes(key)) {
+        sanitizedData[key] = data[key]
+      }
+    })
 
-  if (error) {
-    return { error: error.message }
+    console.log(`[saveSettings] Updating tenant ${tenantId}. Sanitized payload fields:`, Object.keys(sanitizedData))
+
+    const { error } = await insforge.database
+      .from('tenants')
+      .update(sanitizedData)
+      .eq('id', tenantId)
+
+    if (error) {
+      console.error('[saveSettings] Database Error:', error)
+      return { error: error.message }
+    }
+    
+    return { success: true }
+  } catch (err: any) {
+    console.error('[saveSettings] Server Crash:', err)
+    return { error: 'Error interno del servidor al procesar la solicitud.' }
   }
-  return { success: true }
 }
 
 export async function uploadImageAction(tenantSlug: string, type: 'logo' | 'cover', formData: FormData) {
@@ -98,7 +123,7 @@ export async function generateImageFromAIAction(tenantId: string, tenantSlug: st
 
     const { error: uploadError } = await insforge.storage
       .from('tenant_assets')
-      .upload(filePath, blob as any, { contentType: 'image/png' })
+      .upload(filePath, blob as any)
 
     if (uploadError) {
       return { error: 'Se generó la imagen pero falló su guardado: ' + uploadError.message }
