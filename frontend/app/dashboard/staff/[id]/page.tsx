@@ -4,9 +4,11 @@ import { getCurrentProfile } from '@/lib/auth'
 import { createInsForgeServerClient } from '@/lib/insforge-server'
 import { getAccessToken } from '@/lib/cookies'
 import HorariosClient from './HorariosClient'
+import StaffManagementTabs from './StaffManagementTabs'
+import { UserCircle } from 'lucide-react'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
-  return { title: `Configurar Barbero | Bookeiro` }
+  return { title: `Gestionar Barbero | Bookeiro` }
 }
 
 export default async function StaffDetailServer({ params }: { params: Promise<{ id: string }> }) {
@@ -37,19 +39,58 @@ export default async function StaffDetailServer({ params }: { params: Promise<{ 
     .order('day_of_week', { ascending: true })
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      {/* Nav */}
-      <div style={{ marginBottom: '2rem' }}>
-        <Link href="/dashboard/staff" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontSize: '0.9rem' }}>
-          ← Volver a Configuración de Personal
+    <div className="dashboard-container">
+      {/* Nav & Header Premium */}
+      <div style={{ marginBottom: '3rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <Link href="/dashboard/staff" style={{ 
+          color: 'var(--color-text-secondary)', 
+          textDecoration: 'none', 
+          fontSize: '0.9rem', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.5rem',
+        }}>
+          ← Volver a la lista de Personal
         </Link>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', marginTop: '0.5rem' }}>
-          Horarios de <span style={{ color: 'var(--color-primary)' }}>{staff.name}</span>
-        </h1>
-        <p style={{ color: 'var(--color-text-secondary)' }}>Configura los bloques de horas en los que este barbero atiende citas.</p>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ 
+            width: '80px', 
+            height: '80px', 
+            borderRadius: '24px', 
+            background: 'var(--color-bg-surface)', 
+            border: '1px solid var(--color-border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            boxShadow: 'var(--shadow-sm)'
+          }}>
+            {staff.avatar_url ? (
+              <img src={staff.avatar_url} alt={staff.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <UserCircle size={40} style={{ color: 'var(--color-text-muted)' }} />
+            )}
+          </div>
+          
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', margin: 0, fontWeight: 800, lineHeight: 1 }}>
+              Gestionar <span style={{ color: 'var(--color-primary)' }}>{staff.name}</span>
+            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem' }}>
+               <span style={{ fontSize: '1rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+                {staff.specialty || 'Profesional'}
+              </span>
+              <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--color-text-muted)' }} />
+              <span style={{ fontSize: '0.85rem', color: staff.is_active ? 'var(--color-success)' : 'var(--color-error)', fontWeight: 600 }}>
+                {staff.is_active ? '● Activo' : '● Inactivo'}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <HorariosClient staffId={staffId} initialHours={hours || []} />
+      <StaffManagementTabs staff={staff} initialHours={hours || []} />
     </div>
   )
 }

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${inter.variable} ${playfair.variable} ${spaceGrotesk.variable} ${fraunces.variable} ${dmSans.variable}`}>
+      <body className={`${inter.variable} ${playfair.variable} ${spaceGrotesk.variable} ${fraunces.variable} ${dmSans.variable}`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

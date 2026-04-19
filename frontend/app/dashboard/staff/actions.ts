@@ -17,7 +17,15 @@ async function getClientAndTenant() {
   return { insforge, tenantId: profile.tenant_id }
 }
 
-export async function createStaffAction(name: string, invite_email: string) {
+export async function createStaffAction(params: {
+  name: string, 
+  invite_email: string,
+  avatar_url?: string,
+  instagram?: string,
+  specialty?: string,
+  bio?: string
+}) {
+  const { name, invite_email, avatar_url, instagram, specialty, bio } = params
   try {
     const { insforge, tenantId } = await getClientAndTenant()
     
@@ -25,7 +33,15 @@ export async function createStaffAction(name: string, invite_email: string) {
     const { data: tenant } = await insforge.database.from('tenants').select('name').eq('id', tenantId).single()
     const tenantName = tenant?.name || 'Bookeiro'
 
-    const payload: any = { tenant_id: tenantId, name }
+    const payload: any = { 
+      tenant_id: tenantId, 
+      name,
+      avatar_url: avatar_url || null,
+      instagram: instagram?.trim() || null,
+      specialty: specialty?.trim() || null,
+      bio: bio?.trim() || null
+    }
+    
     if (invite_email.trim()) payload.invite_email = invite_email.trim()
 
     const { error: dbError } = await insforge.database
@@ -49,11 +65,46 @@ export async function createStaffAction(name: string, invite_email: string) {
         })
       } catch (msgErr) {
         console.error('Failed to trigger insmessage:', msgErr)
-        // We don't block the UI if the email fails, the record is already in DB
       }
     }
     
     revalidatePath('/dashboard/staff')
+    return { success: true }
+  } catch (err: any) {
+    return { error: err.message }
+  }
+}
+
+export async function updateStaffAction(staffId: string, params: {
+  name?: string,
+  avatar_url?: string,
+  instagram?: string,
+  specialty?: string,
+  bio?: string,
+  is_active?: boolean
+}) {
+  try {
+    const { insforge, tenantId } = await getClientAndTenant()
+    
+    // Validate authorization
+    const { data: staff } = await insforge.database
+      .from('staff')
+      .select('id')
+      .eq('id', staffId)
+      .eq('tenant_id', tenantId)
+      .single()
+      
+    if (!staff) return { error: 'No autorizado o no encontrado' }
+
+    const { error: dbError } = await insforge.database
+      .from('staff')
+      .update(params)
+      .eq('id', staffId)
+      
+    if (dbError) return { error: dbError.message }
+
+    revalidatePath('/dashboard/staff')
+    revalidatePath(`/dashboard/staff/${staffId}`)
     return { success: true }
   } catch (err: any) {
     return { error: err.message }

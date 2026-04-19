@@ -68,7 +68,7 @@ export default async function StaffPage() {
                 </div>
               </div>
               <Link href={`/dashboard/staff/${s.id}`} className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Settings size={16} /> Configurar Horarios
+                <Settings size={16} /> Gestionar Profesional
               </Link>
             </div>
           ))
