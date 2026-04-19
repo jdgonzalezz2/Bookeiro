@@ -16,11 +16,12 @@ export interface StaffProfileData {
 interface StaffProfileFormProps {
   initialData?: Partial<StaffProfileData>
   onSubmit: (data: StaffProfileData) => Promise<void>
+  onCancel?: () => void
   isSaving: boolean
-  mode: 'create' | 'edit'
+  mode: 'edit' | 'create'
 }
 
-export default function StaffProfileForm({ initialData, onSubmit, isSaving, mode }: StaffProfileFormProps) {
+export default function StaffProfileForm({ initialData, onSubmit, onCancel, isSaving, mode }: StaffProfileFormProps) {
   const [name, setName] = useState(initialData?.name || '')
   const [inviteEmail, setInviteEmail] = useState(initialData?.invite_email || '')
   const [instagram, setInstagram] = useState(initialData?.instagram || '')
@@ -194,16 +195,38 @@ export default function StaffProfileForm({ initialData, onSubmit, isSaving, mode
           />
         </div>
 
-        <button type="submit" className="btn btn-primary" style={{ height: '52px', fontSize: '1rem', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.6rem', marginTop: '1rem' }} disabled={isSaving || !name.trim()}>
-          {isSaving ? (
-            <><Loader2 className="animate-spin" size={20} /> Guardando...</>
-          ) : (
-            <>
-              {mode === 'create' ? <Plus size={20} /> : <Save size={20} />}
-              {mode === 'create' ? 'Crear Perfil e Invitar' : 'Guardar Cambios'}
-            </>
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+          {onCancel && (
+            <button 
+              type="button" 
+              onClick={onCancel} 
+              style={{ 
+                flex: 1, 
+                height: '52px', 
+                background: 'var(--color-bg-primary)', 
+                border: '1px solid var(--color-border)', 
+                borderRadius: '16px', 
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--color-border)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'var(--color-bg-primary)'}
+            >
+              Cancelar
+            </button>
           )}
-        </button>
+          <button type="submit" className="btn btn-primary" style={{ flex: 2, height: '52px', fontSize: '1rem', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.6rem' }} disabled={isSaving || !name.trim()}>
+            {isSaving ? (
+              <><Loader2 className="animate-spin" size={20} /> Guardando...</>
+            ) : (
+              <>
+                {mode === 'create' ? <Plus size={20} /> : <Save size={20} />}
+                {mode === 'create' ? 'Crear Perfil e Invitar' : 'Guardar Cambios'}
+              </>
+            )}
+          </button>
+        </div>
       </form>
     </div>
   )

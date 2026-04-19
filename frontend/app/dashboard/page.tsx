@@ -4,6 +4,8 @@ import { getCurrentProfile } from '@/lib/auth'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { PenTool, ArrowUpRight, CheckCircle2 } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const profile = await getCurrentProfile()
   if (!profile) redirect('/login')

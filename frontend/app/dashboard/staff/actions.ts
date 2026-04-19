@@ -86,15 +86,24 @@ export async function updateStaffAction(staffId: string, params: {
   try {
     const { insforge, tenantId } = await getClientAndTenant()
     
-    // Validate authorization
+    // Validate authorization: Either owner of tenant OR the staff member themselves
+    const profile = await getCurrentProfile()
+    if (!profile) throw new Error('Not authenticated')
+
+    const { data: tenantRow } = await insforge.database.from('tenants').select('owner_id').eq('id', tenantId).single()
+    const isOwner = tenantRow?.owner_id === profile.id
+
     const { data: staff } = await insforge.database
       .from('staff')
-      .select('id')
+      .select('id, user_id')
       .eq('id', staffId)
       .eq('tenant_id', tenantId)
       .single()
       
-    if (!staff) return { error: 'No autorizado o no encontrado' }
+    if (!staff) return { error: 'No encontrado' }
+
+    const isSelf = staff.user_id === profile.id
+    if (!isOwner && !isSelf) return { error: 'No autorizado para editar este perfil' }
 
     const { error: dbError } = await insforge.database
       .from('staff')

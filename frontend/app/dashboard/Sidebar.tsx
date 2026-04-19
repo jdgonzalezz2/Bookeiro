@@ -16,6 +16,7 @@ export default function Sidebar({ profile, tenant }: { profile: any, tenant: any
       items: [
         { label: 'Inicio', icon: <LayoutDashboard size={18} strokeWidth={1.5} />, href: '/dashboard', exact: true },
         { label: 'Agenda de citas', icon: <Calendar size={18} strokeWidth={1.5} />, href: '/dashboard/booking' },
+        { label: 'Mi Perfil Profesional', icon: <Users size={18} strokeWidth={1.5} />, href: '/dashboard/profile', roles: ['barber'] },
         { label: 'Profesionales', icon: <Users size={18} strokeWidth={1.5} />, href: '/dashboard/staff', roles: ['owner'] },
         { label: 'Servicios', icon: <ListFilter size={18} strokeWidth={1.5} />, href: '/dashboard/services', roles: ['owner'] },
         { label: 'Base de Clientes', icon: <Users size={18} strokeWidth={1.5} />, href: '/dashboard/clients' },
