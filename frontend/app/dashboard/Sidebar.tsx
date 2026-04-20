@@ -6,7 +6,7 @@ import { Scissors, FileText, Users, Calendar, Clock, ShoppingBag, History, BarCh
 import { signOutAction } from './actions'
 import { ThemeToggle } from '@/components/theme-toggle'
 
-export default function Sidebar({ profile, tenant }: { profile: any, tenant: any }) {
+export default function Sidebar({ profile, tenant, onClose }: { profile: any, tenant: any, onClose?: () => void }) {
   const pathname = usePathname()
   const isBarber = profile?.role === 'barber'
 
@@ -45,7 +45,7 @@ export default function Sidebar({ profile, tenant }: { profile: any, tenant: any
     <aside className="dashboard-sidebar">
       <div className="dashboard-sidebar-header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '1.25rem' }}>
-          <Link href="/dashboard" className="dashboard-sidebar-logo">
+          <Link href="/dashboard" className="dashboard-sidebar-logo" onClick={onClose}>
             <div className="dashboard-sidebar-logo-icon">
               <Scissors strokeWidth={2.5} size={18} />
             </div>
@@ -98,7 +98,7 @@ export default function Sidebar({ profile, tenant }: { profile: any, tenant: any
             {group.items.map((item: any) => {
               const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
               return (
-                <Link key={item.label} href={item.href} className={`sidebar-link ${isActive ? 'active' : ''}`} style={{ padding: '0.5rem 0.75rem' }}>
+                <Link key={item.label} href={item.href} className={`sidebar-link ${isActive ? 'active' : ''}`} style={{ padding: '0.5rem 0.75rem' }} onClick={onClose}>
                   {item.icon}
                   {item.label}
                 </Link>
@@ -126,7 +126,7 @@ export default function Sidebar({ profile, tenant }: { profile: any, tenant: any
           </div>
         </div>
         
-        <form action={signOutAction}>
+        <form action={signOutAction} onSubmit={onClose}>
           <button type="submit" className="sidebar-link" style={{ color: 'var(--color-text-secondary)', padding: '0.4rem 0', fontSize: '0.8rem' }}>
             <LogOut size={16} strokeWidth={1.5} /> Cerrar sesión
           </button>

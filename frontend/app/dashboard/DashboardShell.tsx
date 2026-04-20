@@ -26,16 +26,17 @@ export default function DashboardShell({ children, profile, tenant }: DashboardS
           </div>
           <span className="dashboard-sidebar-logo-name">Bookeiro</span>
         </div>
-        <button onClick={toggleSidebar} className="mobile-menu-toggle">
+        <button onClick={toggleSidebar} className="mobile-menu-toggle" aria-label="Abrir menú">
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
+      {/* Overlay for mobile — outside wrapper so it covers full screen */}
+      {isSidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar} />}
+
       {/* Sidebar with state class */}
       <div className={`dashboard-sidebar-wrapper ${isSidebarOpen ? 'open' : ''}`}>
-        {/* Overlay for mobile */}
-        {isSidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar} />}
-        <Sidebar profile={profile} tenant={tenant} />
+        <Sidebar profile={profile} tenant={tenant} onClose={closeSidebar} />
       </div>
 
       <main className="dashboard-main">

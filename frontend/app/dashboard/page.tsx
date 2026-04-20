@@ -33,11 +33,10 @@ export default async function DashboardPage() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         
         {/* Call to action principal */}
-        <div style={{
+        <div className="dashboard-main-cta" style={{
             background: 'var(--gradient-card)',
             border: '1px solid var(--color-border-focus)',
             borderRadius: 'var(--radius-xl)',
-            padding: '2.5rem',
             display: 'flex',
             flexDirection: 'column',
             gap: '1.5rem',
@@ -55,21 +54,21 @@ export default async function DashboardPage() {
               <CheckCircle2 size={16} /> Alta Prioridad
             </div>
             
-            <h2 style={{ fontSize: '2rem', fontFamily: 'var(--font-display)', fontWeight: 700, marginBottom: '1rem', color: 'var(--color-text-primary)' }}>
+            <h2 className="dashboard-cta-title" style={{ fontFamily: 'var(--font-display)', fontWeight: 700, marginBottom: '1rem', color: 'var(--color-text-primary)' }}>
               Configurar diseño de tu Vitrina Pública
             </h2>
-            <p style={{ fontSize: '1.1rem', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: '2rem' }}>
+            <p className="dashboard-cta-desc" style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: '2rem' }}>
               Personaliza el logotipo, los colores, tu dirección y redes sociales. Tu página es el primer punto de contacto con tus clientes. Asegúrate de que luzca exactamente como tu marca se lo merece.
             </p>
             
-            <Link href="/dashboard/settings" className="btn btn-primary" style={{ padding: '1rem 2.5rem', fontSize: '1rem', width: 'auto', display: 'inline-flex' }}>
+            <Link href="/dashboard/settings" className="btn btn-primary dashboard-cta-btn" style={{ padding: '1rem 2.5rem', fontSize: '1rem', width: 'auto', display: 'inline-flex' }}>
               <PenTool size={20} /> Ir a Editar Página 
             </Link>
           </div>
         </div>
 
         {/* Cajas secundarias temporales */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <div className="responsive-grid-2">
           <div style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--color-text-primary)' }}>Citas de Hoy</h3>
             <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--color-primary)' }}>0</div>

@@ -1025,6 +1025,20 @@ a {
   .dashboard-nav {
     padding: 0 1rem;
   }
+
+  .dashboard-container {
+    padding: 1.25rem 1rem;
+    padding-top: 1.5rem;
+  }
+  
+  .dashboard-page-title {
+    font-size: clamp(1.15rem, 5vw, 1.75rem);
+    line-height: 1.2;
+  }
+  
+  .dashboard-page-header {
+    margin-bottom: 1.5rem;
+  }
 }
 
 /* ============================================================
@@ -1095,36 +1109,149 @@ a {
   }
 }
 
-.dashboard-module-card.clickable {
-  cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-.dashboard-module-card.clickable:hover {
-  transform: translateY(-4px);
-  border-color: var(--color-primary);
-  box-shadow: 0 10px 40px -10px rgba(201,168,76,0.15);
-}
-
 /* ============================================================
-   STOREFRONT PREMIUM STYLES
+   RESPONSIVE UTILITIES & DASHBOARD FIXES
    ============================================================ */
-.store-service-card {
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+
+/* Generic responsive containers */
+.responsive-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+@media (max-width: 768px) {
+  .responsive-grid-2 { grid-template-columns: 1fr; }
 }
 
-.store-service-card:hover {
-  transform: translateY(-8px);
-  border-color: var(--color-primary) !important;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.15) !important;
+.responsive-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+@media (max-width: 640px) {
+  .responsive-row { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 1rem;
+  }
 }
 
-.btn-reservar-vitrina {
-  transition: all 0.3s ease !important;
+/* Worker Hero Responsive */
+.worker-hero {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  transition: all var(--transition-base);
 }
 
-.btn-reservar-vitrina:hover {
-  transform: scale(1.05);
-  box-shadow: 0 12px 24px var(--color-primary-dark) !important;
+@media (max-width: 720px) {
+  .worker-hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.5rem;
+    padding: 2rem !important;
+  }
+  .worker-hero-content {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+  }
+  .worker-hero-date {
+    text-align: center !important;
+  }
 }
 
+/* Appointment rows & timeline */
+.appointment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .appointment-card {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    padding: 1.25rem !important;
+    align-items: flex-start !important;
+  }
+  .appointment-time-wrapper {
+    text-align: left !important;
+    min-width: unset !important;
+    padding-left: 0 !important;
+  }
+  .appointment-time-dot {
+    display: none !important;
+  }
+  .appointment-timeline-line {
+    display: none !important;
+  }
+  .appointment-main-content {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1.25rem !important;
+    text-align: left !important;
+  }
+  .appointment-meta {
+    text-align: left !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+  }
+}
+
+/* Hide/Show utilities */
+.hide-mobile {
+  @media (max-width: 900px) { display: none !important; }
+}
+.show-mobile {
+  display: none !important;
+  @media (max-width: 900px) { display: block !important; }
+}
+
+/* Dashboard Home Specifics */
+.dashboard-main-cta {
+  padding: 2.5rem;
+}
+
+.dashboard-cta-title {
+  font-size: 2rem;
+}
+
+.dashboard-cta-desc {
+  font-size: 1.1rem;
+}
+
+@media (max-width: 640px) {
+  .dashboard-main-cta {
+    padding: 1.5rem;
+    gap: 1.25rem;
+  }
+  .dashboard-cta-btn {
+    width: 100% !important;
+    justify-content: center;
+  }
+  .dashboard-cta-title {
+    font-size: 1.35rem !important;
+    line-height: 1.2 !important;
+  }
+  .dashboard-cta-desc {
+    font-size: 0.9rem !important;
+  }
+}
+
+/* Sidebar Overlay adjustment */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 99;
+  transition: opacity 0.3s ease;
+}
+
+.dashboard-root {
+  transition: all 0.3s ease;
+}

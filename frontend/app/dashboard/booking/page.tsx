@@ -41,9 +41,9 @@ export default async function BookingDashboardPage() {
           <div className="alert border" style={{ textAlign: 'center', padding: '2rem' }}>No tienes citas próximas agendadas.</div>
         ) : (
           upcomingAppointments.map((a: any) => (
-            <div key={a.id} style={{ 
+            <div key={a.id} className="appointment-row" style={{ 
               background: 'var(--gradient-card)', border: '1px solid var(--color-primary)', 
-              padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' 
+              padding: '1.5rem', borderRadius: 'var(--radius-md)' 
             }}>
               <div>
                 <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--color-primary)' }}>{new Date(a.start_time).toLocaleString('es-CO', { dateStyle: 'full', timeStyle: 'short' })}</div>
@@ -67,9 +67,9 @@ export default async function BookingDashboardPage() {
           <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--color-text-muted)' }}>El historial está vacío.</div>
         ) : (
           pastAppointments.map((a: any) => (
-            <div key={a.id} style={{ 
+            <div key={a.id} className="appointment-row" style={{ 
               background: 'var(--color-glass)', border: '1px solid var(--color-glass-border)', 
-              padding: '1rem 1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' 
+              padding: '1rem 1.5rem', borderRadius: 'var(--radius-md)' 
             }}>
                <div>
                 <div style={{ fontSize: '1rem', fontWeight: 600 }}>{new Date(a.start_time).toLocaleString()}</div>

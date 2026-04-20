@@ -96,14 +96,11 @@ export default async function WorkerDashboardPage() {
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '1.5rem 0.5rem 4rem' }}>
         
         {/* ── Premium Hero Section ── */}
-        <div style={{
+        <div className="worker-hero" style={{
           background: 'linear-gradient(135deg, #111118 0%, #16161f 100%)', 
           border: '1px solid var(--color-glass-border)',
           borderRadius: '28px', 
           padding: '3rem', 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '2.5rem', 
           marginBottom: '3rem',
           boxShadow: 'var(--shadow-lg)',
           position: 'relative',
@@ -138,8 +135,7 @@ export default async function WorkerDashboardPage() {
               <UserRound size={48} style={{ color: '#111' }} />
             )}
           </div>
-          
-          <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
+              <div className="worker-hero-content" style={{ flex: 1, position: 'relative', zIndex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
               <span style={{ 
                 fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', 
@@ -150,7 +146,7 @@ export default async function WorkerDashboardPage() {
                 Portal Professional
               </span>
             </div>
-            <h1 style={{ fontSize: '2.75rem', fontWeight: 800, margin: 0, letterSpacing: '-0.04em', color: 'var(--color-text-primary)', fontFamily: 'var(--font-display)' }}>
+            <h1 style={{ fontSize: '2.75rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: 'var(--color-text-primary)', fontFamily: 'var(--font-display)' }}>
               ¡Qué bueno verte, <span style={{ background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{myStaffRecord.name.split(' ')[0]}</span>!
             </h1>
             <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.15rem', marginTop: '0.75rem', fontWeight: 400 }}>
@@ -158,7 +154,7 @@ export default async function WorkerDashboardPage() {
             </p>
           </div>
 
-          <div style={{ position: 'relative', zIndex: 1, textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+          <div className="worker-hero-date" style={{ position: 'relative', zIndex: 1, textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>{currentDateLabel}</div>
              <div style={{ fontSize: '0.9rem', color: 'var(--color-primary)', fontWeight: 600, textTransform: 'capitalize' }}>{currentWeekdayLabel}</div>
           </div>
@@ -231,12 +227,12 @@ export default async function WorkerDashboardPage() {
       ) : (
         <div style={{ display: 'grid', gap: '1.5rem', position: 'relative' }}>
           {/* Vertical line for the timeline effect */}
-          <div style={{ position: 'absolute', left: '44px', top: '2rem', bottom: '2rem', width: '2px', background: 'linear-gradient(to bottom, var(--color-primary) 0%, transparent 100%)', opacity: 0.1, zIndex: 0 }} />
+          <div className="appointment-timeline-line" style={{ position: 'absolute', left: '44px', top: '2rem', bottom: '2rem', width: '2px', background: 'linear-gradient(to bottom, var(--color-primary) 0%, transparent 100%)', opacity: 0.1, zIndex: 0 }} />
 
           {formattedAppointments.map(app => {
             const isToday = app.appointment_date === todayStr;
             return (
-              <div key={app.id} style={{ 
+              <div key={app.id} className="appointment-card" style={{ 
                 background: 'var(--color-bg-card)', 
                 border: '1px solid var(--color-border)', 
                 padding: '1.5rem 2rem', 
@@ -252,8 +248,8 @@ export default async function WorkerDashboardPage() {
               }}
               >
                 {/* Time Indicator with Dot */}
-                <div style={{ textAlign: 'center', minWidth: '90px', position: 'relative' }}>
-                  <div style={{ 
+                <div className="appointment-time-wrapper" style={{ textAlign: 'center', minWidth: '90px', position: 'relative' }}>
+                  <div className="appointment-time-dot" style={{ 
                     width: '12px', height: '12px', borderRadius: '50%', background: isToday ? 'var(--color-primary)' : 'var(--color-text-muted)', 
                     position: 'absolute', left: '-30px', top: '50%', transform: 'translateY(-50%)',
                     boxShadow: isToday ? '0 0 10px var(--color-primary)' : 'none',
@@ -268,7 +264,7 @@ export default async function WorkerDashboardPage() {
                 </div>
 
                 {/* Main Content */}
-                <div style={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
+                <div className="appointment-main-content" style={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem' }}>
                   <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
                     <div style={{ 
                       width: 52, height: 52, borderRadius: '16px', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border)',
@@ -285,7 +281,7 @@ export default async function WorkerDashboardPage() {
                     </div>
                   </div>
 
-                  <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                  <div className="appointment-meta" style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '2rem' }}>
                     <div>
                       <div style={{ 
                         fontWeight: 700, fontSize: '0.85rem', color: 'var(--color-primary)', 
