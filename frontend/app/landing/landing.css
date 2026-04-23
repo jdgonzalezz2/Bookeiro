@@ -1205,11 +1205,11 @@
   .ln-marquee-item { gap: 2rem; }
 }
 
-/* Very small phones (≤ 420px) */
-@media (max-width: 420px) {
+/* Very small phones (≤ 480px) */
+@media (max-width: 480px) {
   .ln-nav-inner { padding: 0.8rem 1rem; }
   .ln-logo { font-size: 1.25rem; }
-  .ln-nav-ctas .ln-btn-ghost { display: none; }
+  .ln-nav-ctas .ln-btn-primary { display: none; } /* Hide only the long button in header */
   .ln-btn { padding: 0.75rem 1.1rem; font-size: 0.9rem; }
   .ln-btn-lg { padding: 0.85rem 1.25rem; }
 
