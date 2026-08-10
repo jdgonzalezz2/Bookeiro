@@ -48,11 +48,23 @@ export async function getCurrentProfile(): Promise<AuthProfile | null> {
   const accessToken = await getAccessToken()
   const insforge = createInsForgeServerClient(accessToken)
 
-  const { data: profile } = await insforge.database
+  let { data: profile } = await insforge.database
     .from('profiles')
     .select('tenant_id, role')
     .eq('id', user.id)
     .single()
+
+  // Lazy-create the profile row on first access.
+  // Newer InsForge no longer auto-creates a public.profiles row on signup,
+  // so we self-heal here (users have an INSERT-own-row RLS policy).
+  if (!profile) {
+    const { data: created } = await insforge.database
+      .from('profiles')
+      .insert([{ id: user.id, name: user.name ?? null }])
+      .select('tenant_id, role')
+      .single()
+    profile = created ?? null
+  }
 
   return {
     ...user,
