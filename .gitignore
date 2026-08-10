@@ -13,3 +13,6 @@
 .roo
 .trae
 .windsurf
+
+# graphify knowledge-graph output (generated, regenerable via /graphify)
+graphify-out/

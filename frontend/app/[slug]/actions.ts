@@ -59,17 +59,18 @@ export async function getAvailableSlots(tenantId: string, staffId: string, dateS
   const startOfDay = new Date(year, month - 1, day, 0, 0, 0).toISOString()
   const endOfDay = new Date(year, month - 1, day, 23, 59, 59).toISOString()
 
-  const { data: appointments } = await insforge.database
-    .from('appointments')
-    .select('start_time, end_time')
-    .eq('staff_id', staffId)
-    .neq('status', 'cancelled')
-    .gte('start_time', startOfDay)
-    .lte('start_time', endOfDay)
+  // Use the get_busy_slots RPC (SECURITY DEFINER, no PII) instead of reading
+  // appointments directly — the public read policy was removed to avoid exposing
+  // customer_name / customer_phone to the anon key.
+  const { data: appointments } = await insforge.database.rpc('get_busy_slots', {
+    p_staff_id: staffId,
+    p_from: startOfDay,
+    p_to: endOfDay,
+  })
 
-  const booked = (appointments || []).map(a => ({
-    start: new Date(a.start_time).getTime(),
-    end: new Date(a.end_time).getTime()
+  const booked = ((appointments as { busy_start: string; busy_end: string }[]) || []).map(a => ({
+    start: new Date(a.busy_start).getTime(),
+    end: new Date(a.busy_end).getTime()
   }))
 
   // 4. Generate Slots
@@ -127,6 +128,9 @@ export async function submitBooking(
 ) {
   const insforge = getAnonClient()
 
+  // NOTE: `p_total_price` is IGNORED by the book_appointment RPC — the price is
+  // computed server-side from services/staff_services so a client cannot book at
+  // an arbitrary price. We still pass it only for backward signature compat.
   const { data, error } = await insforge.database.rpc('book_appointment', {
     p_tenant_id: tenantId,
     p_staff_id: staffId,

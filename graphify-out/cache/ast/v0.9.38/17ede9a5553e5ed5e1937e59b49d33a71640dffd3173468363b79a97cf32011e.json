@@ -1,1 +1,0 @@
-{"nodes": [{"id": "$graphify-root$_migrations_03_rbac_staff_sql", "label": "03_rbac_staff.sql", "file_type": "code", "source_file": "migrations/03_rbac_staff.sql", "source_location": null}, {"id": "public_staff", "label": "public.staff", "file_type": "code", "source_file": "", "source_location": "", "origin_file": "$graphify-root$/migrations/03_rbac_staff.sql"}], "edges": []}
