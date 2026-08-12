@@ -40,11 +40,18 @@ export default async function PublicTenantPage({ params }: { params: Promise<{ s
   }
 
   // Pre-fetch services and staff serverside to inject into the storefront
-  const [{ data: services }, { data: staffList }, { data: reviews }] = await Promise.all([
+  const [{ data: services }, { data: staffList }, { data: reviews }, { data: depStatus }] = await Promise.all([
     insforge.database.from('services').select('*').eq('tenant_id', tenant.id).eq('is_active', true),
     insforge.database.from('staff').select('*').eq('tenant_id', tenant.id).eq('is_active', true),
-    insforge.database.from('reviews').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false })
+    insforge.database.from('reviews').select('*').eq('tenant_id', tenant.id).order('created_at', { ascending: false }),
+    // ¿El abono está activo Y configurado? (RPC sin exponer secretos.)
+    insforge.database.rpc('deposit_status', { p_tenant_id: tenant.id })
   ])
+
+  // Inyecta el estado real del abono en el objeto tenant que ve la vitrina.
+  const dep = Array.isArray(depStatus) ? depStatus[0] : depStatus
+  tenant.deposit_active = Boolean(dep?.active)
+  if (dep?.percent != null) tenant.deposit_percent = dep.percent
 
   // Determine font variable based on selection
   let fontVar = 'var(--font-inter)'

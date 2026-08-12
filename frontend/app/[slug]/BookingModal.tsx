@@ -81,7 +81,9 @@ export default function BookingModal({
   const [bookedApptId, setBookedApptId] = useState<string|null>(null)
   const [payPhase, setPayPhase] = useState<'none'|'approved'|'pending'>('none')
 
-  const depositEnabled = Boolean(tenant?.deposit_enabled)
+  // deposit_active = el negocio activó abono Y configuró sus llaves de Wompi
+  // (lo calcula el RPC deposit_status en el server). Evita pedir pago sin config.
+  const depositEnabled = Boolean(tenant?.deposit_active)
   const depositPercent = Number(tenant?.deposit_percent ?? 50)
 
   // Initialize from defaults when opened
