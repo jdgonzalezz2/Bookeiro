@@ -1,5 +1,11 @@
 -- P1.2 — Recordatorios por email (v1).
 --
+-- ⚠️ APLICAR SOLO por el workflow de migraciones del CLI:
+--     npx @insforge/cli db migrations up <archivo-con-nombre-timestamp>.sql
+--    NO usar `db query` para este archivo: parte el SQL por `;` y no soporta el
+--    cuerpo $$...$$ de la función (deja book_appointment DROPeada => rompe el
+--    booking). Aplicada en prod el 2026-08-12 vía migrations up.
+--
 -- 1) Captura un email OPCIONAL del cliente en la cita (hoy la vitrina solo pedía
 --    nombre + teléfono).
 -- 2) Lleva control de qué recordatorios ya se enviaron (24h / 2h) para que el
