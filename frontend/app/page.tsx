@@ -11,6 +11,7 @@ import CountUp from './landing/CountUp'
 import LandingMotion from './landing/LandingMotion'
 import LandingNav from './landing/LandingNav'
 import LandingFooter from './landing/LandingFooter'
+import Testimonials from './landing/Testimonials'
 
 export const metadata: Metadata = {
   title: 'Bookeiro — La agenda de tu barbería, en una línea de tiempo',
@@ -211,6 +212,9 @@ export default async function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* TESTIMONIALS — real social proof (empty, honest invitation state for now) */}
+      <Testimonials />
 
       {/* FINAL CTA */}
       <section className="lz-final">
