@@ -10,6 +10,7 @@ import TimeRailEmbed from './prototype/time-rail/TimeRailEmbed'
 import HeroSystem from './landing/HeroSystem'
 import CountUp from './landing/CountUp'
 import LandingMotion from './landing/LandingMotion'
+import LandingFooter from './landing/LandingFooter'
 
 export const metadata: Metadata = {
   title: 'Bookeiro — La agenda de tu barbería, en una línea de tiempo',
@@ -251,17 +252,7 @@ export default async function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="lz-footer">
-        <div className="lz-footer-inner">
-          <div className="lz-wordmark"><span className="lz-mark" aria-hidden />Bookeiro</div>
-          <ul className="lz-footer-links">
-            <li><a href="#demo">La agenda</a></li>
-            <li><a href="#producto">Producto</a></li>
-            <li><Link href="/login">Entrar</Link></li>
-          </ul>
-          <span>© {new Date().getFullYear()} Bookeiro · Hecho para el cuidado personal.</span>
-        </div>
-      </footer>
+      <LandingFooter />
 
       <LandingMotion />
     </div>
