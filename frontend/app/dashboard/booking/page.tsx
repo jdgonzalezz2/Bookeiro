@@ -1,10 +1,21 @@
-import Link from 'next/link'
 import { getCurrentProfile } from '@/lib/auth'
 import { createInsForgeServerClient } from '@/lib/insforge-server'
 import { getAccessToken } from '@/lib/cookies'
 import { redirect } from 'next/navigation'
+import TimeRailEmbed from '@/app/prototype/time-rail/TimeRailEmbed'
+import RailStatePanel from '@/app/prototype/time-rail/RailStatePanel'
+import { loadRealRailDay } from '@/lib/rail-adapter/load-real-day'
+import {
+  createAppointmentAction,
+  moveAppointmentAction,
+  cancelAppointmentAction,
+  completeAppointmentAction,
+} from './actions'
 
-export const metadata = { title: 'Agenda de Citas | Bookeiro' }
+export const metadata = { title: 'Agenda del día | Bookeiro' }
+
+// Appointments carry PII and change per request — never cache this read.
+export const dynamic = 'force-dynamic'
 
 export default async function BookingDashboardPage() {
   const profile = await getCurrentProfile()
@@ -13,74 +24,44 @@ export default async function BookingDashboardPage() {
   const accessToken = await getAccessToken()
   const insforge = createInsForgeServerClient(accessToken)
 
-  // Fetch appointments with relation names
-  const { data: appointments } = await insforge.database
-    .from('appointments')
-    .select(`
-      *,
-      staff ( name ),
-      services ( name, duration_mins )
-    `)
-    .eq('tenant_id', profile.tenant_id)
-    .order('start_time', { ascending: true })
-
-  const upcomingAppointments = appointments?.filter((a: any) => new Date(a.start_time).getTime() >= Date.now()) || []
-  const pastAppointments = appointments?.filter((a: any) => new Date(a.start_time).getTime() < Date.now()) || []
+  // `now` resolved ONCE here (server request instant) and threaded through as
+  // day.now, so SSR and client hydration render the identical rail.
+  const result = await loadRealRailDay(insforge, profile.tenant_id, Date.now())
 
   return (
     <div className="dashboard-container">
-      
       <header className="dashboard-page-header">
-        <h1 className="dashboard-page-title">Agenda de Reservas</h1>
-        <p className="dashboard-page-desc">Controla y visualiza todas las citas agendadas por tus clientes en tiempo real.</p>
+        <h1 className="dashboard-page-title">Agenda del día</h1>
+        <p className="dashboard-page-desc">
+          Tu día real en la línea de tiempo, en vivo desde tu backend. Arrastra, reserva, completa o
+          cancela — cada cambio se valida y se guarda en el servidor.
+        </p>
       </header>
 
-      <h2 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-display)', margin: '2rem 0 1rem' }}>Citas Próximas</h2>
-      <div style={{ display: 'grid', gap: '1rem' }}>
-        {upcomingAppointments.length === 0 ? (
-          <div className="alert border" style={{ textAlign: 'center', padding: '2rem' }}>No tienes citas próximas agendadas.</div>
-        ) : (
-          upcomingAppointments.map((a: any) => (
-            <div key={a.id} className="appointment-row" style={{ 
-              background: 'var(--gradient-card)', border: '1px solid var(--color-primary)', 
-              padding: '1.5rem', borderRadius: 'var(--radius-md)' 
-            }}>
-              <div>
-                <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--color-primary)' }}>{new Date(a.start_time).toLocaleString('es-CO', { dateStyle: 'full', timeStyle: 'short' })}</div>
-                <div style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{a.customer_name} — {a.customer_phone}</div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
-                  {a.services?.name} (Con {a.staff?.name})
-                </div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <span className="card-badge badge-active">Confirmada</span>
-                <div style={{ marginTop: '0.5rem', fontWeight: 600 }}>Total: ${a.total_price}</div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      <h2 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-display)', margin: '3rem 0 1rem', color: 'var(--color-text-muted)' }}>Citas Anteriores</h2>
-      <div style={{ display: 'grid', gap: '1rem', opacity: 0.7 }}>
-        {pastAppointments.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--color-text-muted)' }}>El historial está vacío.</div>
-        ) : (
-          pastAppointments.map((a: any) => (
-            <div key={a.id} className="appointment-row" style={{ 
-              background: 'var(--color-glass)', border: '1px solid var(--color-glass-border)', 
-              padding: '1rem 1.5rem', borderRadius: 'var(--radius-md)' 
-            }}>
-               <div>
-                <div style={{ fontSize: '1rem', fontWeight: 600 }}>{new Date(a.start_time).toLocaleString()}</div>
-                <div style={{ fontSize: '0.9rem' }}>{a.customer_name} — {a.services?.name}</div>
-              </div>
-              <div>Realizada ✓</div>
-            </div>
-          ))
-        )}
-      </div>
-
+      {result.status === 'ok' ? (
+        <TimeRailEmbed
+          day={result.day}
+          persistence={{
+            create: createAppointmentAction,
+            move: moveAppointmentAction,
+            cancel: cancelAppointmentAction,
+            complete: completeAppointmentAction,
+          }}
+        />
+      ) : result.status === 'empty' ? (
+        <RailStatePanel
+          tone="empty"
+          businessName={result.business.name}
+          title="Aún no hay nada que mostrar hoy"
+          message="No encontramos profesionales activos ni citas para hoy. Agrega tu equipo y sus horarios, y las reservas de tus clientes aparecerán aquí en la línea de tiempo."
+        />
+      ) : (
+        <RailStatePanel
+          tone="error"
+          title="No pudimos cargar la agenda"
+          message={`Ocurrió un problema al leer tus datos: ${result.message}. Vuelve a intentarlo en un momento.`}
+        />
+      )}
     </div>
   )
 }

@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+/* Fonts come from next/font (app/fonts.ts): Hanken Grotesk (--font-hanken) +
+   IBM Plex Mono (--font-plex). No @import — avoids a render-blocking request. */
 
 /* ============================================================
    DESIGN TOKENS — Bookeiro Premium Theme System
@@ -9,6 +10,18 @@
   --color-primary-light:   #e8cc7a;
   --color-primary-dark:    #9c7d35;
   --color-accent:          #d4af6e;
+
+  /* ---- COMPÁS design system (Step 13) — warm paper/ink instrument palette ---- */
+  --compas-paper:          #f5f1e8;   /* warm bone base */
+  --compas-paper-deep:     #efe9db;   /* raised surface */
+  --compas-ink:            #1a1712;   /* warm near-black */
+  --compas-muted:          #6b6355;   /* secondary text */
+  --compas-faint:          #9a9184;   /* tertiary text */
+  --compas-amber:          #c6982f;   /* signal only */
+  --compas-terracotta:     #c05a3e;   /* conflict / correction */
+  --compas-sage:           #5e7a54;   /* completed / success */
+  --compas-line:           #e2dacb;   /* hairline */
+  --radius-xs:             4px;
 
   /* States */
   --color-error:           #ff4d6d;
@@ -51,8 +64,9 @@
   --radius-xl:             24px;
   --radius-full:           999px;
 
-  --font-sans:             'Inter', system-ui, sans-serif;
-  --font-display:          'Space Grotesk', system-ui, sans-serif;
+  --font-sans:             var(--font-hanken), 'Hanken Grotesk', system-ui, sans-serif;
+  --font-display:          var(--font-hanken), 'Hanken Grotesk', system-ui, sans-serif;
+  --font-mono:             var(--font-plex), 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   --transition-fast:       150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base:       250ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -60,20 +74,31 @@
 }
 
 .dark {
-  /* Dark Theme */
-  --color-bg-base:         #0a0a0f;
-  --color-bg-surface:      #111118;
-  --color-bg-card:         #16161f;
-  --color-bg-hover:        #1e1e2a;
-  --color-bg-elevated:     #16161f;
+  /* Dark Theme — COMPÁS warm near-black (was cold blue-black) */
+  --color-bg-base:         #16130e;
+  --color-bg-surface:      #1e1a13;
+  --color-bg-card:         #232019;
+  --color-bg-hover:        #2a251d;
+  --color-bg-elevated:     #232019;
+
+  /* COMPÁS dark tokens */
+  --compas-paper:          #16130e;
+  --compas-paper-deep:     #1e1a13;
+  --compas-ink:            #f1ebdd;
+  --compas-muted:          #b3a992;
+  --compas-faint:          #857c6b;
+  --compas-amber:          #d8ae4a;
+  --compas-terracotta:     #d07152;
+  --compas-sage:           #7e9a72;
+  --compas-line:           rgba(241, 235, 221, 0.09);
 
   --color-glass:           rgba(255, 255, 255, 0.03);
   --color-glass-border:    rgba(255, 255, 255, 0.08);
   --color-glass-hover:     rgba(255, 255, 255, 0.05);
 
-  --color-text-primary:    #f0f0f5;
-  --color-text-secondary:  #9090a0;
-  --color-text-muted:      #5a5a6e;
+  --color-text-primary:    #f1ebdd;
+  --color-text-secondary:  #b3a992;
+  --color-text-muted:      #857c6b;
   
   --color-success:         #4dffb4;
   --color-success-bg:      rgba(77, 255, 180, 0.1);
@@ -177,10 +202,7 @@ a {
   font-family: var(--font-display);
   font-size: 1.75rem;
   font-weight: 700;
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-primary);
 }
 
 .auth-brand-tagline {
@@ -193,10 +215,7 @@ a {
 }
 
 .auth-brand-tagline span {
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-primary);
 }
 
 .auth-brand-desc {
@@ -971,10 +990,7 @@ a {
 }
 
 .dashboard-greeting h1 span {
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-primary);
 }
 
 .dashboard-greeting p {

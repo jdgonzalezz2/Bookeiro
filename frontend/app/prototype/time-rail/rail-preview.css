@@ -1,0 +1,498 @@
+/* ============================================================================
+   TIME-RAIL PROTOTYPE — scoped styles (Step 3, static/resting state only)
+   Everything is namespaced under .rail-proto so it CANNOT affect the rest of
+   the site. No changes to globals.css / landing.css / site-wide fonts.
+   Fonts are loaded here (Hanken Grotesk + IBM Plex Mono) and applied ONLY
+   inside .rail-proto, with robust fallbacks if the network is unavailable.
+   ============================================================================ */
+/* Fonts come from next/font (app/fonts.ts) via the global CSS variables —
+   no @import needed. */
+.rail-proto {
+  /* Bible palette — warm, light-first */
+  --rp-cal: #f5f1e8;      /* page base */
+  --rp-papel: #fbf8f1;    /* card surface */
+  --rp-hueso: #e7e0d2;    /* hairline */
+  --rp-tinta: #1a1712;    /* ink / text */
+  --rp-ink-2: #6b6355;    /* secondary text */
+  --rp-ink-3: #9a9184;    /* muted text */
+  --rp-ambar: #c6982f;    /* signal only */
+  --rp-verde: #5e7a54;    /* paid / completed */
+  --rp-terracota: #c05a3e;/* correction / cancelled */
+
+  --rp-font: var(--font-hanken), 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --rp-mono: var(--font-plex), 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Fixed geometry — locks layout so hydration attaches without shift */
+  --rp-gutter: 172px;
+  --rp-lane-h: 104px;
+  --rp-axis-h: 44px;
+  --rp-board-min: 960px;
+  --rp-radius: 8px;
+
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 1.75rem 3rem;
+  font-family: var(--rp-font);
+  color: var(--rp-tinta);
+  background: var(--rp-cal);
+  min-height: 100vh;
+  line-height: 1.4;
+}
+.rail-proto *,
+.rail-proto *::before,
+.rail-proto *::after { box-sizing: border-box; }
+
+.rp-mono { font-family: var(--rp-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+
+/* ---------- Header ---------- */
+.rp-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+.rp-head-id { display: flex; align-items: baseline; gap: 0.85rem; flex-wrap: wrap; }
+.rp-badge {
+  font-family: var(--rp-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--rp-cal);
+  background: var(--rp-tinta);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+/* Live (real backend) rail: sage = valid/live in the COMPÁS semantics. */
+.rp-badge[data-live] { background: var(--rp-verde); color: var(--rp-cal); }
+.rp-title { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+.rp-date { font-size: 0.85rem; color: var(--rp-ink-2); }
+.rp-head-now { text-align: right; display: flex; flex-direction: column; gap: 0.15rem; }
+.rp-head-now-label {
+  font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--rp-ink-3);
+}
+.rp-head-now-time { font-size: 1.4rem; font-weight: 500; color: var(--rp-ambar); }
+
+/* ---------- Board / rows (fixed geometry) ---------- */
+.rp-scroll { overflow-x: auto; border: 1px solid var(--rp-hueso); border-radius: 12px; background: var(--rp-papel); }
+.rp-board { min-width: var(--rp-board-min); }
+
+.rp-row { display: grid; grid-template-columns: var(--rp-gutter) 1fr; align-items: stretch; }
+.rp-row + .rp-lane-row .rp-gutter,
+.rp-row + .rp-lane-row .rp-track { border-top: 1px solid var(--rp-hueso); }
+
+.rp-gutter {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0 1rem;
+  border-right: 1px solid var(--rp-hueso);
+}
+.rp-track { position: relative; }
+
+/* ---------- Axis ---------- */
+.rp-axis-row { height: var(--rp-axis-h); }
+.rp-axis-gutter {
+  font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--rp-ink-3);
+}
+.rp-axis { height: 100%; }
+.rp-tick { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--rp-hueso); }
+.rp-tick-major { background: color-mix(in srgb, var(--rp-hueso) 60%, var(--rp-ink-3)); }
+.rp-tick-label {
+  position: absolute; top: 0.5rem; left: 4px;
+  font-size: 0.68rem; color: var(--rp-ink-2); white-space: nowrap;
+}
+.rp-now-flag { position: absolute; top: 0.4rem; transform: translateX(-50%); }
+.rp-now-flag span {
+  font-size: 0.66rem; font-weight: 600; color: var(--rp-cal);
+  background: var(--rp-ambar); padding: 0.1rem 0.35rem; border-radius: 4px; white-space: nowrap;
+}
+
+/* ---------- Lanes ---------- */
+.rp-lane-row { height: var(--rp-lane-h); }
+.rp-avatar {
+  width: 30px; height: 30px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--rp-ink-3) 14%, var(--rp-papel));
+  border: 1px solid var(--rp-hueso);
+  font-weight: 600; font-size: 0.85rem; color: var(--rp-ink-2);
+}
+.rp-lane-name { font-weight: 600; font-size: 0.95rem; margin-right: auto; }
+.rp-lane-meta { font-size: 0.7rem; color: var(--rp-ink-3); }
+
+.rp-lane-track { overflow: hidden; }
+
+/* Minor grid inside each lane track (mirrors the axis, subtle) */
+.rp-lane-track::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent calc(100% / 22 - 1px),
+    var(--rp-hueso) calc(100% / 22 - 1px),
+    var(--rp-hueso) calc(100% / 22)
+  );
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Derived available slot markers (rail-core.computeSlots) */
+.rp-slot {
+  position: absolute; bottom: 10px; transform: translateX(-50%);
+  width: 6px; height: 6px; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--rp-ambar) 55%, transparent);
+  background: transparent;
+}
+
+/* ---------- Appointment blocks ---------- */
+.rp-appt {
+  position: absolute; top: 12px; bottom: 12px;
+  display: flex; flex-direction: column; justify-content: center; gap: 1px;
+  padding: 0.4rem 0.55rem;
+  border-radius: var(--rp-radius);
+  background: var(--rp-papel);
+  border: 1px solid var(--rp-hueso);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(26, 23, 18, 0.06);
+}
+.rp-appt-svc { font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Status is encoded by a small "tick" dot on the time row (not a side-tab). */
+.rp-appt-time { display: flex; align-items: center; gap: 5px; font-size: 0.66rem; color: var(--rp-ink-2); white-space: nowrap; }
+.rp-appt-time::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  box-sizing: border-box; border: 1.5px solid var(--rp-ink-3); background: transparent;
+}
+.rp-appt-client { font-size: 0.68rem; color: var(--rp-ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rp-appt-price { font-size: 0.72rem; font-weight: 600; color: var(--rp-tinta); white-space: nowrap; }
+
+/* State language (matches the Step-4 state machine). Each state carries a
+   NON-COLOUR cue — dot fill (hollow vs solid), a block ring, a glyph, or a
+   dashed border + strikethrough — so state never relies on colour alone.
+   Colour reinforces; it is never the only signal. */
+.rp-appt[data-state='confirmed'] { border-color: color-mix(in srgb, var(--rp-ambar) 45%, var(--rp-hueso)); }
+.rp-appt[data-state='confirmed'] .rp-appt-time::before { border-color: var(--rp-ambar); background: transparent; } /* hollow ring = upcoming */
+.rp-appt[data-state='in-progress'] {
+  border-color: var(--rp-ambar);
+  box-shadow: 0 0 0 1px var(--rp-ambar), 0 1px 3px rgba(26, 23, 18, 0.06); /* full ring on block = happening now */
+}
+.rp-appt[data-state='in-progress'] .rp-appt-time::before { background: var(--rp-ambar); border-color: var(--rp-ambar); } /* solid dot */
+.rp-appt[data-state='completed'] {
+  border-color: color-mix(in srgb, var(--rp-verde) 45%, var(--rp-hueso));
+  background: color-mix(in srgb, var(--rp-verde) 8%, var(--rp-papel));
+}
+.rp-appt[data-state='completed'] .rp-appt-time::before { background: var(--rp-verde); border-color: var(--rp-verde); } /* solid dot */
+.rp-appt[data-state='completed'] .rp-appt-price { color: var(--rp-verde); }
+.rp-appt[data-state='completed'] .rp-appt-price::before { content: '\2713\00a0'; } /* check glyph = done (non-colour cue) */
+.rp-appt[data-state='cancelled'] {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--rp-terracota) 55%, transparent);
+  background: color-mix(in srgb, var(--rp-terracota) 6%, var(--rp-papel));
+  opacity: 0.72;
+}
+.rp-appt[data-state='cancelled'] .rp-appt-time::before { background: var(--rp-terracota); border-color: var(--rp-terracota); }
+.rp-appt[data-state='cancelled'] .rp-appt-svc,
+.rp-appt[data-state='cancelled'] .rp-appt-client { text-decoration: line-through; }
+
+/* NowLine (per-lane segment; contiguous across stacked lanes) */
+.rp-now-line {
+  position: absolute; top: 0; bottom: 0; width: 2px;
+  background: var(--rp-ambar);
+  transform: translateX(-1px);
+}
+
+/* ---------- Ledger ---------- */
+.rp-ledger {
+  display: flex; flex-direction: column; gap: 0.75rem;
+  margin-top: 0.75rem; padding: 1.1rem 1.5rem;
+  background: var(--rp-tinta); color: var(--rp-cal);
+  border-radius: 12px;
+}
+.rp-ledger-row { display: flex; flex-wrap: wrap; gap: 2.5rem; align-items: baseline; }
+.rp-ledger-illustrative {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+  font-size: 0.72rem; line-height: 1.4;
+  color: color-mix(in srgb, var(--rp-cal) 55%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--rp-cal) 12%, transparent);
+  padding-top: 0.6rem;
+}
+.rp-ledger-illustrative .rp-mono { color: color-mix(in srgb, var(--rp-cal) 72%, transparent); }
+.rp-ledger-illus-tag {
+  font-family: var(--rp-mono); font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--rp-cal) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rp-cal) 28%, transparent);
+  padding: 0.05rem 0.35rem; border-radius: 4px;
+}
+/* Visually-hidden accessible layer (screen-reader summary + live region). */
+.rp-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+.rp-ledger-item { display: flex; flex-direction: column; gap: 0.25rem; }
+.rp-ledger-label {
+  font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--rp-cal) 55%, transparent);
+}
+.rp-ledger-total { font-size: 1.5rem; font-weight: 600; color: var(--rp-ambar); }
+.rp-ledger-value { font-size: 1.15rem; font-weight: 500; }
+
+.rp-note { margin-top: 1rem; font-size: 0.72rem; color: var(--rp-ink-3); max-width: 60ch; }
+
+/* Non-data states for the real rail (loading / empty / error) — same chrome,
+   quiet paper panel, no spinner. */
+.rp-state {
+  border: 1px solid var(--rp-hueso);
+  border-radius: 12px;
+  background: var(--rp-papel);
+  padding: clamp(2rem, 6vw, 4rem) 1.5rem;
+  text-align: center;
+}
+.rp-state-title { margin: 0 0 0.4rem; font-size: 1.05rem; font-weight: 600; color: var(--rp-tinta); }
+.rp-state-msg { margin: 0 auto; max-width: 46ch; font-size: 0.9rem; line-height: 1.55; color: var(--rp-ink-2); }
+.rp-state[data-tone='error'] { border-color: color-mix(in srgb, var(--rp-terracota) 45%, var(--rp-hueso)); }
+.rp-state[data-tone='error'] .rp-state-title { color: var(--rp-terracota); }
+.rp-state[data-tone='loading'] .rp-state-title { color: var(--rp-ink-2); }
+
+/* Quick-add customer fields (real create). */
+.rp-cust { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.rp-cust-input {
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--rp-tinta);
+  background: var(--rp-cal);
+  border: 1px solid var(--rp-hueso);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  min-width: 10rem;
+}
+.rp-cust-input:focus-visible { outline: 2px solid var(--rp-ambar); outline-offset: 1px; border-color: var(--rp-ambar); }
+
+/* Persistence status banner — restrained: amber saving, sage success, terracotta error. */
+.rp-mutation {
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--rp-hueso);
+  background: var(--rp-papel);
+  color: var(--rp-ink-2);
+}
+.rp-mutation[data-status='saving'] {
+  color: color-mix(in srgb, var(--rp-ambar) 80%, var(--rp-tinta));
+  border-color: color-mix(in srgb, var(--rp-ambar) 45%, var(--rp-hueso));
+  background: color-mix(in srgb, var(--rp-ambar) 8%, var(--rp-papel));
+}
+.rp-mutation[data-status='success'] {
+  color: var(--rp-verde);
+  border-color: color-mix(in srgb, var(--rp-verde) 45%, var(--rp-hueso));
+  background: color-mix(in srgb, var(--rp-verde) 8%, var(--rp-papel));
+}
+.rp-mutation[data-status='error'] {
+  color: var(--rp-terracota);
+  border-color: color-mix(in srgb, var(--rp-terracota) 45%, var(--rp-hueso));
+  background: color-mix(in srgb, var(--rp-terracota) 8%, var(--rp-papel));
+}
+
+/* ============================================================================
+   STEP 4 — interaction states (click-only: select / tentative / actions)
+   ============================================================================ */
+.rp-appt { cursor: pointer; }
+.rp-slot { cursor: pointer; }
+/* Free time reads as selectable: the marker fills amber on hover (no motion). */
+.rp-slot:hover,
+.rp-m-slot:hover { background: color-mix(in srgb, var(--rp-ambar) 55%, transparent); border-color: var(--rp-ambar); }
+/* Selected appointment is unmistakable: ink ring + a small amber edge tick. */
+.rp-appt[data-selected='true'] { outline: 2px solid var(--rp-tinta); outline-offset: 2px; z-index: 3; }
+
+/* Tentative block (client-only, pre-confirm) */
+.rp-appt-tentative {
+  border-style: dashed;
+  border-color: var(--rp-ambar);
+  background: color-mix(in srgb, var(--rp-ambar) 8%, var(--rp-papel));
+  z-index: 2;
+}
+.rp-appt-tentative .rp-appt-time::before { background: transparent; border-color: var(--rp-ambar); }
+
+/* Contextual action bar */
+.rp-actionbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
+  margin-top: 0.75rem; padding: 0.7rem 1rem;
+  background: var(--rp-papel); border: 1px solid var(--rp-hueso); border-radius: 10px;
+}
+.rp-actionbar-info { font-size: 0.85rem; color: var(--rp-ink-2); }
+.rp-actionbar-btns { display: flex; gap: 0.5rem; }
+.rp-btn {
+  font-family: var(--rp-font); font-size: 0.8rem; font-weight: 600;
+  padding: 0.45rem 0.9rem; border-radius: 6px;
+  border: 1px solid var(--rp-hueso); background: var(--rp-cal); color: var(--rp-tinta);
+  cursor: pointer;
+}
+.rp-btn:hover { border-color: var(--rp-ink-3); }
+.rp-btn-primary { background: var(--rp-ambar); border-color: var(--rp-ambar); color: #1a1712; }
+.rp-btn-danger { background: transparent; color: var(--rp-terracota); border-color: color-mix(in srgb, var(--rp-terracota) 45%, var(--rp-hueso)); }
+.rp-btn-ghost { background: transparent; }
+
+/* ============================================================================
+   STEP 5 — collision + Calm Correction (terracotta; restrained; interruptible)
+   ============================================================================ */
+.rp-demo-controls { margin-top: 0.75rem; display: flex; gap: 0.5rem; }
+
+/* Ghost at the desired (occupied) position — a single calm pulse, not a scold. */
+.rp-collision-ghost {
+  position: absolute; top: 12px; bottom: 12px;
+  border: 1px dashed var(--rp-terracota);
+  background: color-mix(in srgb, var(--rp-terracota) 12%, transparent);
+  border-radius: var(--rp-radius);
+  display: grid; place-items: center;
+  z-index: 1; pointer-events: none;
+  animation: rp-collision-pulse 900ms ease-out 1;
+}
+.rp-collision-label {
+  font-size: 0.6rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--rp-terracota);
+}
+@keyframes rp-collision-pulse {
+  0% { background: color-mix(in srgb, var(--rp-terracota) 34%, transparent); }
+  100% { background: color-mix(in srgb, var(--rp-terracota) 12%, transparent); }
+}
+
+/* The corrected tentative settles into its valid slot. */
+.rp-appt-tentative { animation: rp-settle 260ms cubic-bezier(0.2, 0.8, 0.2, 1) 1; }
+@keyframes rp-settle {
+  from { opacity: 0.35; transform: translateY(-2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.rp-actionbar-collision { color: var(--rp-terracota); font-weight: 600; }
+
+/* Reduced motion: correction becomes an immediate reposition, no animation. */
+@media (prefers-reduced-motion: reduce) {
+  .rp-collision-ghost,
+  .rp-appt-tentative { animation: none; }
+}
+
+/* ============================================================================
+   STEP 7 — interaction (drag / keyboard move / touch). Restrained + deterministic.
+   ============================================================================ */
+.rp-appt { cursor: grab; touch-action: none; }
+.rp-appt:focus-visible { outline: 2px solid var(--rp-tinta); outline-offset: 2px; z-index: 5; }
+.rp-appt[data-moving='true'] { opacity: 0.4; cursor: grabbing; }
+/* Calm settle: a committed move glides to its new position. Only `left` changes
+   — moves preserve duration, so `width` is invariant and must not be animated. */
+.rp-appt {
+  transition: left 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Move preview ghost — magnetic snap glides between grid steps. */
+.rp-move-ghost {
+  position: absolute; top: 12px; bottom: 12px;
+  border: 1px dashed var(--rp-ambar);
+  background: color-mix(in srgb, var(--rp-ambar) 10%, transparent);
+  border-radius: var(--rp-radius);
+  display: grid; place-items: center;
+  z-index: 4; pointer-events: none;
+  /* No transition: the ghost snaps DISCRETELY to each 30-min grid position, so a
+     drag never animates a layout property continuously (Step 10). */
+}
+.rp-move-ghost-label { font-size: 0.66rem; color: var(--rp-ambar); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rp-appt,
+  .rp-move-ghost { transition: none; }
+}
+
+/* ============================================================================
+   STEP 8 — responsive projection. Same TimeRail, two orientations.
+   Desktop/tablet (>= 768px) show the horizontal rail (existing, tablet scrolls
+   the time axis). Mobile (< 768px) shows the vertical projection. Both render
+   server-side; CSS picks the orientation -> no JS detection, no hydration shift.
+   ============================================================================ */
+.rp-mobile { display: none; }
+
+@media (max-width: 767px) {
+  .rp-desktop { display: none; }
+  .rp-mobile { display: block; }
+  .rail-proto { padding: 1.25rem 1rem 2rem; }
+}
+
+/* Staff-chip switcher (changes the VISIBLE lane only) */
+.rp-m-chips { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.rp-m-chip {
+  font-family: var(--rp-font); font-size: 0.85rem; font-weight: 600;
+  padding: 0.5rem 0.95rem; border-radius: 8px;
+  border: 1px solid var(--rp-hueso); background: var(--rp-papel); color: var(--rp-ink-2);
+  cursor: pointer;
+}
+.rp-m-chip-active { background: var(--rp-tinta); color: var(--rp-cal); border-color: var(--rp-tinta); }
+.rp-m-chip:focus-visible { outline: 2px solid var(--rp-tinta); outline-offset: 2px; }
+
+/* Vertical rail: time -> y, fixed 30-min scale (reserved geometry, no shift) */
+.rp-m-body {
+  position: relative;
+  display: grid; grid-template-columns: 54px 1fr;
+  border: 1px solid var(--rp-hueso); border-radius: 12px; background: var(--rp-papel);
+  overflow: hidden;
+}
+.rp-m-axis { position: relative; border-right: 1px solid var(--rp-hueso); }
+.rp-m-tick {
+  position: absolute; left: 6px; transform: translateY(-50%);
+  font-size: 0.66rem; color: var(--rp-ink-2); white-space: nowrap;
+}
+.rp-m-track { position: relative; }
+.rp-m-track::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom, transparent 0, transparent 45px, var(--rp-hueso) 45px, var(--rp-hueso) 46px
+  );
+  opacity: 0.5;
+}
+.rp-m-slot {
+  position: absolute; left: 11px;
+  width: 6px; height: 6px; border-radius: 50%; transform: translate(-50%, -50%);
+  border: 1px solid color-mix(in srgb, var(--rp-ambar) 55%, transparent);
+  cursor: pointer;
+}
+/* Mobile appointment/ghost blocks: span the track width; top/height are inline
+   (from the projection). Clear the horizontal base's top/bottom. */
+.rp-m-appt,
+.rp-m-move-ghost,
+.rp-m-collision-ghost {
+  left: 8px; right: 8px; top: auto; bottom: auto; width: auto;
+}
+.rp-m-appt {
+  padding: 0.35rem 0.5rem; overflow: hidden;
+  transition: top 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.rp-m-appt .rp-appt-svc { font-size: 0.78rem; }
+.rp-m-appt .rp-appt-time { font-size: 0.64rem; }
+/* Mobile ghost snaps discretely too — no continuous layout transition (Step 10). */
+.rp-m-now-line {
+  position: absolute; left: 0; right: 0; height: 2px; z-index: 3;
+  background: var(--rp-ambar); transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rp-m-appt,
+  .rp-m-move-ghost { transition: none; }
+}
+
+/* ============================================================================
+   STEP 9 — accessibility. Focus targets for slot gridcells (appointments already
+   carry :focus-visible). High-contrast ink ring (>= 3:1 on warm surfaces).
+   ============================================================================ */
+.rp-slot:focus-visible,
+.rp-m-slot:focus-visible {
+  outline: 2px solid var(--rp-tinta);
+  outline-offset: 3px;
+}
+
+/* ---------- Warm dark alternate (Bible: light-first, warm dark option) ---------- */
+.dark .rail-proto {
+  --rp-cal: #1a1712;
+  --rp-papel: #232019;
+  --rp-hueso: rgba(246, 242, 233, 0.1);
+  --rp-tinta: #f1ebdd;
+  --rp-ink-2: #b3a992;
+  --rp-ink-3: #857c6b;
+}

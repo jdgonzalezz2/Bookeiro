@@ -31,3 +31,33 @@ npx @insforge/cli db query "$(tr '\n' ' ' < tests/book_appointment.test.sql)"
 > salto de línea. Los comentarios del archivo son de bloque (`/* */`) para
 > sobrevivir el aplanado. Si el resultado no trae error → todos los tests pasaron;
 > un `TESTS FAILED: N fallas` indica cuántos fallaron.
+
+## `appointment_mutations.test.sql`
+
+Suite autocontenida para los RPC de mutación del Step 19 (`move_appointment`,
+`cancel_appointment`, `complete_appointment`, definidos en
+`migrations/12_appointment_mutations.sql`). Verifica autorización, estados
+terminales, identidad, jornada y colisión atómica:
+
+| Test | Qué comprueba |
+|------|----------------|
+| M1 | Move válido: reubica y **preserva** id + duración (autoritativo del servidor) |
+| M2 | Colisión: no se puede mover sobre un horario ocupado (no cancelado) |
+| M3 | Adyacencia permitida: fin==inicio no es colisión |
+| M4 | Move entre profesionales del **mismo** negocio |
+| M5 | `OUTSIDE_HOURS`: fuera de la jornada (solo si hay horario configurado) |
+| M6–M8 | Completar; no mover ni cancelar una cita completada (terminal) |
+| C1–C3 | Cancelar (no borra); cancel idempotente; no completar una cancelada |
+| A1 | `UNAUTHORIZED`: quien no es dueño ni staff no puede mutar |
+| N1 | `NOT_FOUND`: id inexistente |
+
+`auth.uid()` se simula fijando el claim JWT del owner. Correr igual que el otro:
+
+```bash
+npx @insforge/cli db query "$(tr '\n' ' ' < tests/appointment_mutations.test.sql)"
+```
+
+> **Aplicar la migración primero:** `12_appointment_mutations.sql` debe estar
+> aplicada (`db query` / `db migrations`) contra el proyecto InsForge enlazado
+> antes de correr esta suite. La garantía de concurrencia es el lock `FOR UPDATE`
+> sobre la fila del profesional; M2 verifica el rechazo de colisión observable.
