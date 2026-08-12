@@ -2,24 +2,26 @@
 
 import { useState, useEffect } from 'react'
 import { getAvailableSlots, submitBooking } from './actions'
+import { X, Check, ArrowLeft, Clock } from 'lucide-react'
+import { formatMoney, formatDate, readableOn } from './format'
 
 type Service = any
 type Staff = any
 type Slot = { startIso: string, endIso: string, label: string }
 
-export default function BookingModal({ 
-  tenant, 
-  primaryColor, 
-  isOpen, 
+export default function BookingModal({
+  tenant,
+  primaryColor,
+  isOpen,
   onClose,
   initialServiceId,
   initialStaffId,
   services,
   staffList
-}: { 
-  tenant: any, 
-  primaryColor: string, 
-  isOpen: boolean, 
+}: {
+  tenant: any,
+  primaryColor: string,
+  isOpen: boolean,
   onClose: () => void,
   initialServiceId?: string,
   initialStaffId?: string,
@@ -27,10 +29,10 @@ export default function BookingModal({
   staffList: Staff[]
 }) {
   const [step, setStep] = useState<number>(1)
-  
+
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null)
-  
+
   const [dateStr, setDateStr] = useState<string>('')
   const [slots, setSlots] = useState<Slot[]>([])
   const [loadingSlots, setLoadingSlots] = useState(false)
@@ -51,14 +53,14 @@ export default function BookingModal({
         setSelectedService(null)
         setStep(1)
       }
-      
+
       if (initialStaffId) {
         setSelectedStaff(staffList.find(s => s.id === initialStaffId) || null)
         if (initialServiceId) setStep(3) // Jump to Time selection
       } else {
         setSelectedStaff(null)
       }
-      
+
       setBookingSuccess(false)
       setDateStr('')
       setCustomerInfo({ name: '', phone: '' })
@@ -79,40 +81,57 @@ export default function BookingModal({
 
   if (!isOpen) return null
 
+  const onPrimary = readableOn(primaryColor)
+  const mono: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }
+  const specLabel: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase' }
+  const dateInputStyle: React.CSSProperties = { width: '100%', marginBottom: '1.5rem', background: 'var(--color-bg-deep)', color: 'var(--color-text-primary)', border: '1px solid var(--color-line)' }
+  const steps = ['Servicio', 'Profesional', 'Horario', 'Datos']
+
+  const initials = (name: string) => name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+
   return (
     <div className="booking-modal-overlay" style={{
       position: 'fixed', inset: 0, zIndex: 9999,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', padding: '1rem'
+      background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)', padding: '1rem'
     }}>
       <div className="booking-modal" style={{
+        // --on-primary drives readable text on primary-filled controls (e.g. slot hover) from CSS.
+        ['--on-primary' as any]: onPrimary,
         width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto',
-        background: 'var(--color-bg-base)', border: '1px solid var(--color-border)',
-        padding: '2.5rem', borderRadius: 'var(--radius-lg)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', textAlign: 'left',
+        background: 'var(--color-bg-base)', border: '1px solid var(--color-line)',
+        padding: '2.5rem', borderRadius: '16px', boxShadow: '0 24px 60px -20px rgba(0,0,0,0.45)', textAlign: 'left',
         position: 'relative'
       }}>
-        
-        <button onClick={onClose} style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--color-text-muted)' }}>
-          ✖
+
+        <button onClick={onClose} aria-label="Cerrar" style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'var(--color-bg-deep)', border: '1px solid var(--color-line)', borderRadius: '50%', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-muted)' }}>
+          <X size={17} strokeWidth={2} />
         </button>
 
         {bookingSuccess ? (
           <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-            <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🎉</div>
-            <h2 style={{ fontSize: '2rem', color: 'var(--color-text-primary)' }}>¡Cita Confirmada!</h2>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in srgb, var(--color-primary) 16%, transparent)', color: 'var(--color-primary)' }}>
+              <Check size={30} strokeWidth={2.25} />
+            </div>
+            <h2 style={{ fontSize: '1.9rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>Cita confirmada</h2>
             <p style={{ color: 'var(--color-text-secondary)', marginBottom: '2rem' }}>Te esperamos pronto en {tenant.name}.</p>
-            <button onClick={() => window.location.reload()} style={{ background: primaryColor, color: '#fff', border: 'none', padding: '0.8rem 1.5rem', borderRadius: 'var(--radius-md)', fontWeight: 700, cursor: 'pointer' }}>
+            <button onClick={() => window.location.reload()} className="booking-primary-btn" style={{ background: 'var(--color-primary)', color: onPrimary, border: 'none', padding: '0.85rem 1.6rem', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}>
               Finalizar
             </button>
           </div>
         ) : (
           <>
             {/* ProgressBar */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem', fontSize: '0.9rem' }}>
-              <span style={{ fontWeight: 600, color: step >= 1 ? primaryColor : 'var(--color-text-muted)' }}>1. Servicio</span>
-              <span style={{ fontWeight: 600, color: step >= 2 ? primaryColor : 'var(--color-text-muted)' }}>2. Profesional</span>
-              <span style={{ fontWeight: 600, color: step >= 3 ? primaryColor : 'var(--color-text-muted)' }}>3. Horario</span>
-              <span style={{ fontWeight: 600, color: step >= 4 ? primaryColor : 'var(--color-text-muted)' }}>4. Datos</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', borderBottom: '1px solid var(--color-line)', paddingBottom: '1rem', fontSize: '0.9rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {steps.map((labelText, i) => {
+                const n = i + 1
+                const active = step >= n
+                return (
+                  <span key={n} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600, color: active ? 'var(--color-primary)' : 'var(--color-text-muted)' }}>
+                    <span style={{ ...mono, fontSize: '0.78rem', opacity: active ? 1 : 0.7 }}>{n}</span>{labelText}
+                  </span>
+                )
+              })}
             </div>
 
             {bookingError && <div className="alert alert-error" style={{ marginBottom: '1rem' }}>{bookingError}</div>}
@@ -120,18 +139,19 @@ export default function BookingModal({
             {/* STEP 1: Servicio */}
             {step === 1 && (
               <div>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--color-text-primary)' }}>Selecciona tu servicio</h3>
-                {services.length === 0 ? <p>No hay servicios disponibles.</p> : (
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.01em', marginBottom: '1.5rem', color: 'var(--color-text-primary)' }}>Selecciona tu servicio</h3>
+                {services.length === 0 ? <p style={{ color: 'var(--color-text-muted)' }}>No hay servicios disponibles.</p> : (
                   <div style={{ display: 'grid', gap: '0.8rem' }}>
                     {services.map(s => (
                       <div key={s.id} onClick={() => { setSelectedService(s); setStep(2) }}
-                        style={{ padding: '1rem', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', transition: 'all 0.2s', background: 'var(--color-glass)' }}
+                        className="booking-option"
+                        style={{ padding: '1rem', border: '1px solid var(--color-line)', borderRadius: '10px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', background: 'var(--color-bg-deep)' }}
                       >
                         <div>
                           <div style={{ fontWeight: 600 }}>{s.name}</div>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{s.duration_mins} min</div>
+                          <div style={{ ...mono, fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.15rem' }}>{s.duration_mins} min</div>
                         </div>
-                        <div style={{ fontWeight: 700, color: primaryColor }}>${s.base_price}</div>
+                        <div style={{ ...mono, fontWeight: 700, color: 'var(--color-text-primary)' }}>${formatMoney(s.base_price)}</div>
                       </div>
                     ))}
                   </div>
@@ -142,37 +162,39 @@ export default function BookingModal({
             {/* STEP 2: Profesional */}
             {step === 2 && (
               <div>
-                <button onClick={() => setStep(1)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', marginBottom: '1rem' }}>← Volver</button>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--color-text-primary)' }}>¿Con quién te atenderás?</h3>
+                <button onClick={() => setStep(1)} className="booking-back" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', marginBottom: '1rem' }}><ArrowLeft size={15} /> Volver</button>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.01em', marginBottom: '1.5rem', color: 'var(--color-text-primary)' }}>¿Con quién te atenderás?</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem' }}>
                   {staffList.map(st => (
                     <div key={st.id} onClick={() => { setSelectedStaff(st); setStep(3) }}
-                      style={{ padding: '1rem', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', textAlign: 'center', cursor: 'pointer', background: 'var(--color-glass)' }}
+                      className="booking-option"
+                      style={{ padding: '1.25rem 1rem', border: '1px solid var(--color-line)', borderRadius: '10px', textAlign: 'center', cursor: 'pointer', background: 'var(--color-bg-deep)' }}
                     >
-                      <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'var(--color-bg-base)', margin: '0 auto 0.8rem', overflow: 'hidden', border: `1px solid var(--color-primary)` }}>
-                        {st.avatar_url ? <img src={st.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="pic"/> : <div style={{ fontSize: '1.5rem', marginTop: '0.3rem' }}>🧑</div>}
+                      <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'var(--color-bg-base)', margin: '0 auto 0.8rem', overflow: 'hidden', border: `1px solid var(--color-line)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-text-primary)' }}>
+                        {st.avatar_url ? <img src={st.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={st.name}/> : initials(st.name)}
                       </div>
                       <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{st.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--color-primary)', marginTop: '0.2rem', fontWeight: 600 }}>{st.specialty || 'Profesional'}</div>
+                      <div style={{ ...specLabel, color: 'var(--color-primary)', marginTop: '0.35rem' }}>{st.specialty || 'Profesional'}</div>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* STEP 3 & 4 Omitted for brevity but basically the same as original wizard just adjusted colors */}
+            {/* STEP 3: Fecha y hora */}
             {step === 3 && (
               <div>
-                <button onClick={() => setStep(2)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', marginBottom: '1rem' }}>← Volver</button>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--color-text-primary)' }}>Elige Fecha y Hora</h3>
-                <input type="date" className="form-input" value={dateStr} onChange={(e) => setDateStr(e.target.value)} min={new Date().toISOString().split('T')[0]} style={{ width: '100%', marginBottom: '1.5rem', background: 'var(--color-bg-base)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)' }} />
-                
+                <button onClick={() => setStep(2)} className="booking-back" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', marginBottom: '1rem' }}><ArrowLeft size={15} /> Volver</button>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.01em', marginBottom: '1.5rem', color: 'var(--color-text-primary)' }}>Elige fecha y hora</h3>
+                <input type="date" className="form-input" value={dateStr} onChange={(e) => setDateStr(e.target.value)} min={new Date().toISOString().split('T')[0]} style={dateInputStyle} />
+
                 <div style={{ minHeight: '150px' }}>
-                  {!dateStr ? <p style={{ color: 'var(--color-text-muted)', textAlign: 'center' }}>Selecciona un día.</p> : loadingSlots ? <p style={{ textAlign: 'center' }}>Cargando agenda...</p> : slots.length === 0 ? <p style={{ color: '#e74c3c', textAlign: 'center' }}>Agotado este día.</p> : (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem' }}>
+                  {!dateStr ? <p style={{ color: 'var(--color-text-muted)', textAlign: 'center' }}>Selecciona un día.</p> : loadingSlots ? <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>Cargando agenda…</p> : slots.length === 0 ? <p style={{ color: 'var(--color-text-secondary)', textAlign: 'center' }}>Sin espacios disponibles este día.</p> : (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
                       {slots.map(slot => (
                         <button key={slot.startIso} onClick={() => { setSelectedSlot(slot); setStep(4) }}
-                          style={{ padding: '0.8rem', borderRadius: 'var(--radius-md)', border: `1px solid ${primaryColor}`, background: 'transparent', color: 'var(--color-text-primary)', cursor: 'pointer', fontWeight: 600 }}
+                          className="booking-slot"
+                          style={{ ...mono, padding: '0.65rem 0.9rem', borderRadius: '8px', border: `1px solid var(--color-line)`, background: 'transparent', color: 'var(--color-text-primary)', cursor: 'pointer', fontWeight: 600 }}
                         >{slot.label}</button>
                       ))}
                     </div>
@@ -183,22 +205,23 @@ export default function BookingModal({
 
             {step === 4 && selectedService && selectedStaff && selectedSlot && (
               <div>
-                <button onClick={() => { setBookingError(null); setStep(3) }} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', marginBottom: '1rem' }}>← Volver</button>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--color-text-primary)' }}>Detalle de Reserva</h3>
-                
-                <div style={{ background: 'var(--color-glass)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', fontSize: '0.9rem', border: '1px solid var(--color-border)' }}>
-                  <p><strong>Servicio:</strong> {selectedService.name}</p>
-                  <p><strong>Con:</strong> {selectedStaff.name}</p>
-                  <p><strong>Hora:</strong> {new Date(selectedSlot.startIso).toLocaleDateString()} - {selectedSlot.label}</p>
-                  <p><strong>Total:</strong> <span style={{ color: primaryColor, fontWeight: 700 }}>${selectedService.base_price}</span></p>
+                <button onClick={() => { setBookingError(null); setStep(3) }} className="booking-back" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'transparent', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', marginBottom: '1rem' }}><ArrowLeft size={15} /> Volver</button>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '-0.01em', marginBottom: '1.5rem', color: 'var(--color-text-primary)' }}>Detalle de la reserva</h3>
+
+                <div style={{ background: 'var(--color-bg-deep)', padding: '1.25rem', borderRadius: '10px', marginBottom: '1.5rem', fontSize: '0.9rem', border: '1px solid var(--color-line)', display: 'grid', gap: '0.7rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}><span style={{ color: 'var(--color-text-muted)' }}>Servicio</span><span style={{ fontWeight: 600, textAlign: 'right' }}>{selectedService.name}</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}><span style={{ color: 'var(--color-text-muted)' }}>Con</span><span style={{ fontWeight: 600, textAlign: 'right' }}>{selectedStaff.name}</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}><span style={{ color: 'var(--color-text-muted)' }}>Cuándo</span><span style={{ ...mono, fontWeight: 600, textAlign: 'right', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><Clock size={13} /> {formatDate(selectedSlot.startIso)} · {selectedSlot.label}</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', borderTop: '1px solid var(--color-line)', paddingTop: '0.7rem' }}><span style={{ color: 'var(--color-text-muted)' }}>Total</span><span style={{ ...mono, color: 'var(--color-primary)', fontWeight: 700 }}>${formatMoney(selectedService.base_price)}</span></div>
                 </div>
 
                 <div style={{ display: 'grid', gap: '1rem' }}>
-                  <div><label className="form-label" style={{ color: 'var(--color-text-primary)' }}>Tu Nombre</label><input type="text" className="form-input" style={{ background: 'var(--color-bg-base)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)' }} value={customerInfo.name} onChange={e => setCustomerInfo({...customerInfo, name: e.target.value})} placeholder="Juan Pérez" /></div>
-                  <div><label className="form-label" style={{ color: 'var(--color-text-primary)' }}>Teléfono</label><input type="tel" className="form-input" style={{ background: 'var(--color-bg-base)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)' }} value={customerInfo.phone} onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})} placeholder="3001234567" /></div>
+                  <div><label className="form-label" style={{ color: 'var(--color-text-primary)' }}>Tu nombre</label><input type="text" className="form-input" style={{ background: 'var(--color-bg-deep)', color: 'var(--color-text-primary)', border: '1px solid var(--color-line)' }} value={customerInfo.name} onChange={e => setCustomerInfo({...customerInfo, name: e.target.value})} placeholder="Juan Pérez" /></div>
+                  <div><label className="form-label" style={{ color: 'var(--color-text-primary)' }}>Teléfono</label><input type="tel" className="form-input" style={{ background: 'var(--color-bg-deep)', color: 'var(--color-text-primary)', border: '1px solid var(--color-line)' }} value={customerInfo.phone} onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})} placeholder="3001234567" /></div>
                 </div>
 
                 <button disabled={isSubmitting || !customerInfo.name || !customerInfo.phone}
+                  className="booking-primary-btn"
                   onClick={async () => {
                     setIsSubmitting(true)
                     const res = await submitBooking(tenant.id, selectedStaff.id, selectedService.id, customerInfo.name, customerInfo.phone, selectedSlot.startIso, selectedSlot.endIso, selectedService.base_price)
@@ -206,8 +229,8 @@ export default function BookingModal({
                     else setBookingSuccess(true)
                     setIsSubmitting(false)
                   }}
-                  style={{ marginTop: '1.5rem', width: '100%', background: primaryColor, color: '#fff', padding: '1rem', borderRadius: 'var(--radius-md)', border: 'none', fontWeight: 700, fontSize: '1.1rem', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
-                >{isSubmitting ? 'Procesando...' : 'Confirmar Cita'}</button>
+                  style={{ marginTop: '1.5rem', width: '100%', background: 'var(--color-primary)', color: onPrimary, padding: '1rem', borderRadius: '10px', border: 'none', fontWeight: 700, fontSize: '1.05rem', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: (isSubmitting || !customerInfo.name || !customerInfo.phone) ? 0.55 : 1 }}
+                >{isSubmitting ? 'Procesando…' : 'Confirmar cita'}</button>
               </div>
             )}
           </>

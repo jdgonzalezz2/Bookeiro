@@ -206,6 +206,17 @@
   .lz-ledger-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 680px) {
+  /* The nav action cluster (theme + "Entrar" + primary CTA) has a fixed intrinsic
+     width (~423px) that can't compress, so on phones it overflowed the shell and
+     .landing-shell's overflow-x:hidden silently clipped the primary CTA off the
+     right edge. Demote the secondary "Entrar" here — login stays reachable in the
+     footer and the final-CTA section — leaving wordmark + theme + primary CTA,
+     which fits down to 320px. Tighten the gaps/padding so it reads intentional. */
+  .lz-nav-inner { gap: 0.75rem; }
+  .lz-nav-actions { gap: 0.4rem; }
+  .lz-nav-actions .lz-btn-ghost { display: none; }
+  .lz-nav-actions .lz-btn { padding: 0.6rem 0.9rem; }
+
   .lz-principles { grid-template-columns: 1fr; }
   .lz-principle,
   .lz-principle:nth-child(odd),

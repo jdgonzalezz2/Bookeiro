@@ -51,7 +51,9 @@ export default async function PublicTenantPage({ params }: { params: Promise<{ s
   if (tenant.font_family === 'Playfair Display') fontVar = 'var(--font-playfair)'
   if (tenant.font_family === 'Space Grotesk') fontVar = 'var(--font-space)'
 
-  const primaryColor = tenant.primary_color || '#D4AF37'
+  // Default to the COMPÁS amber signal (not the template "luxury gold") when the
+  // tenant hasn't picked a brand color.
+  const primaryColor = tenant.primary_color || '#c6982f'
 
   return (
     <StorefrontClient 

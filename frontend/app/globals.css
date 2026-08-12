@@ -1250,6 +1250,65 @@ a {
 }
 
 /* ============================================================
+   STOREFRONT — COMPÁS skin (hover + motion only). Colors resolve
+   from the per-tenant --color-* custom props set inline on
+   .storefront-root, so this stays brand-aware without hardcoding.
+   ============================================================ */
+.store-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+.store-scroll::-webkit-scrollbar { display: none; }
+
+.store-service-card,
+.store-staff-card {
+  transition: border-color var(--transition-base), transform var(--transition-base);
+}
+/* Subtle lift, only where a real pointer can hover (apple-design: no exaggerated
+   translate + scale, and no sticky hover on touch). */
+@media (hover: hover) {
+  .store-service-card:hover,
+  .store-staff-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-3px);
+  }
+}
+
+.btn-reservar-vitrina {
+  transition: filter var(--transition-fast), transform var(--transition-fast);
+}
+@media (hover: hover) {
+  .btn-reservar-vitrina:hover { filter: brightness(0.94); transform: translateY(-1px); }
+}
+.btn-reservar-vitrina:active { transform: translateY(0); filter: brightness(0.9); }
+
+.btn-reservar-vitrina:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Booking flow (BookingModal) — same Compás skin. Colors inherit from the
+   storefront's per-tenant --color-* props; --on-primary is set on .booking-modal. */
+.booking-option { transition: border-color var(--transition-fast), background-color var(--transition-fast); }
+@media (hover: hover) {
+  .booking-option:hover { border-color: var(--color-primary); }
+}
+.booking-slot { transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast); }
+@media (hover: hover) {
+  .booking-slot:hover { background: var(--color-primary); border-color: var(--color-primary); color: var(--on-primary, #1a1712); }
+}
+.booking-back { transition: color var(--transition-fast); }
+@media (hover: hover) {
+  .booking-back:hover { color: var(--color-text-primary); }
+}
+.booking-primary-btn { transition: filter var(--transition-fast), transform var(--transition-fast); }
+@media (hover: hover) {
+  .booking-primary-btn:not(:disabled):hover { filter: brightness(0.94); transform: translateY(-1px); }
+}
+.booking-primary-btn:not(:disabled):active { transform: translateY(0); filter: brightness(0.9); }
+.booking-option:focus-visible, .booking-slot:focus-visible, .booking-primary-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================
    RESPONSIVE — Booking modal
    ============================================================ */
 @media (max-width: 640px) {

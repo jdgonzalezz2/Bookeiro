@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import BookingModal from './BookingModal'
-import { Camera, Globe, Phone, MessageCircle, Video, MapPin, Clock, Share2, Scissors, Sparkles } from 'lucide-react'
+import { Phone, MapPin, Clock, Share2, Scissors, Sparkles, Star } from 'lucide-react'
+import { formatMoney, formatDate, readableOn } from './format'
 
 export default function StorefrontClient({ tenant, primaryColor, fontVar, services, staffList, reviews }: {
   tenant: any, primaryColor: string, fontVar: string, services: any[], staffList: any[], reviews: any[]
@@ -14,22 +15,31 @@ export default function StorefrontClient({ tenant, primaryColor, fontVar, servic
 
   const isLight = tenant.theme === 'light' || !tenant.theme
 
-  // Definición de Tema Local Dinámico para esta ruta
+  // ─── COMPÁS palette (warm paper/ink instrument) mapped to the tenant's own
+  //     light/dark preference. The tenant's primary_color plays the "amber"
+  //     signal role; neutrals are Compás paper/ink; numbers use IBM Plex Mono.
+  const c = isLight
+    ? { base: '#f5f1e8', deep: '#efe9db', ink: '#1a1712', muted: '#6b6355', faint: '#9a9184', line: '#e2dacb' }
+    : { base: '#16130e', deep: '#1e1a13', ink: '#f1ebdd', muted: '#b3a992', faint: '#857c6b', line: 'rgba(241,235,221,0.10)' }
+
   const themeStyles = {
-    '--color-bg-base': isLight ? '#f9fafb' : '#0a0a0a',
-    '--color-text-primary': isLight ? '#111827' : '#ffffff',
-    '--color-text-secondary': isLight ? '#4b5563' : '#a1a1aa',
-    '--color-text-muted': isLight ? '#6b7280' : '#71717a',
-    '--color-border': isLight ? '#e5e7eb' : '#27272a',
-    '--color-glass': isLight ? '#ffffff' : 'rgba(255, 255, 255, 0.03)',
-    '--color-glass-border': isLight ? '#f3f4f6' : 'rgba(255, 255, 255, 0.05)',
+    '--color-bg-base': c.base,
+    '--color-bg-deep': c.deep,
+    '--color-text-primary': c.ink,
+    '--color-text-secondary': c.muted,
+    '--color-text-muted': c.faint,
+    '--color-line': c.line,
     '--color-primary': primaryColor,
+    '--font-mono': "var(--font-plex), 'IBM Plex Mono', ui-monospace, monospace",
     fontFamily: fontVar,
     backgroundColor: 'var(--color-bg-base)',
     color: 'var(--color-text-primary)',
     minHeight: '100vh',
     paddingBottom: '4rem'
   } as React.CSSProperties
+
+  // Readable ink/paper on top of an arbitrary tenant primary (no fixed white).
+  const onPrimary = readableOn(primaryColor)
 
   const openBooking = (serviceId?: string, staffId?: string) => {
     setInitialServiceId(serviceId)
@@ -42,18 +52,23 @@ export default function StorefrontClient({ tenant, primaryColor, fontVar, servic
     setSelectedStaffForProfile(staff)
   }
 
-  // Helper Card Style Booksy-like
-  const cardStyle = {
-    background: 'var(--color-glass)',
-    border: '1px solid var(--color-border)',
+  // Compás panel: a hairline-bordered cell on paper-deep — no shadow, no glow.
+  const cardStyle: React.CSSProperties = {
+    background: 'var(--color-bg-deep)',
+    border: '1px solid var(--color-line)',
     borderRadius: '12px',
-    padding: '1.5rem',
-    boxShadow: isLight ? '0 4px 6px -1px rgba(0, 0, 0, 0.05)' : 'none'
+    padding: '1.5rem'
   }
+
+  // Mono treatment for measured data (time · money · counts).
+  const mono: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }
+  // Small measured label (uppercase mono), used for annotations — never as a heading kicker.
+  const label: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: '0.68rem', fontWeight: 500, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-text-muted)' }
 
   // Reviews Math
   const totalReviews = reviews?.length || 0;
   const avgRating = totalReviews > 0 ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / totalReviews).toFixed(1) : '0.0';
+  const roundedAvg = Math.round(parseFloat(avgRating)) || 0;
   const ratingBars = [5, 4, 3, 2, 1].map(stars => {
     const count = reviews.filter(r => r.rating === stars).length;
     return { s: stars, p: totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0 };
@@ -72,6 +87,15 @@ export default function StorefrontClient({ tenant, primaryColor, fontVar, servic
     }
     return phone
   }
+
+  // Filled star row for a real rating (drawn lucide icons, one consistent weight).
+  const Stars = ({ value, size = 14 }: { value: number, size?: number }) => (
+    <span style={{ display: 'inline-flex', gap: '1px', color: 'var(--color-primary)' }} aria-hidden>
+      {[1, 2, 3, 4, 5].map(i => (
+        <Star key={i} size={size} strokeWidth={1.5} fill={i <= Math.round(value) ? 'currentColor' : 'none'} style={{ opacity: i <= Math.round(value) ? 1 : 0.35 }} />
+      ))}
+    </span>
+  )
 
   const BrandIcon = ({ name, size = 20 }: { name: string, size?: number }) => {
     const icons: Record<string, any> = {
@@ -102,30 +126,35 @@ export default function StorefrontClient({ tenant, primaryColor, fontVar, servic
   const LogoElement = ({ small = false }: { small?: boolean }) => {
     const size = small ? 60 : 120;
     return tenant.logo_url ? (
-      <img src={tenant.logo_url} alt="Logo" style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: `3px solid var(--color-bg-base)`, boxShadow: '0 4px 10px rgba(0,0,0,0.1)', marginBottom: small ? 0 : '1.5rem' }} />
+      <img src={tenant.logo_url} alt={`Logo de ${tenant.name}`} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: `1px solid var(--color-line)`, boxShadow: '0 2px 10px rgba(0,0,0,0.14)', marginBottom: small ? 0 : '1.5rem' }} />
     ) : (
-      <div style={{ width: size, height: size, borderRadius: '50%', backgroundColor: 'var(--color-glass)', border: `3px solid var(--color-border)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: small ? '1.5rem' : '3rem', marginBottom: small ? 0 : '1.5rem' }}>💈</div>
+      <div style={{ width: size, height: size, borderRadius: '50%', backgroundColor: 'var(--color-bg-deep)', border: `1px solid var(--color-line)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-primary)', marginBottom: small ? 0 : '1.5rem' }}>
+        <Scissors size={small ? 24 : 44} strokeWidth={1.5} />
+      </div>
     )
   }
 
   const MainInfo = () => (
     <div>
       {layoutStyle !== 'minimal' && <LogoElement />}
-      <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>{tenant.name}</h1>
-      
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        {(tenant.tags || []).map((tag: string) => (
-          <span key={tag} style={{ border: '1px solid var(--color-border)', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.85rem' }}>{tag}</span>
-        ))}
-        {(!tenant.tags || tenant.tags.length === 0) && (
-          <span style={{ fontSize: '0.85rem', fontStyle: 'italic', color: 'var(--color-text-muted)' }}>Servicios premium.</span>
-        )}
-      </div>
+      <h1 style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: (tenant.tags?.length || tenant.description) ? '0.75rem' : '0.25rem' }}>{tenant.name}</h1>
 
-      <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '0.8rem' }}>Sobre nosotros</h2>
-      <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-        {tenant.description || `Bienvenido a ${tenant.name}. Atrévete a lucir diferente, contamos con servicios especializados de la mejor calidad.`}
-      </p>
+      {tenant.tags && tenant.tags.length > 0 && (
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          {tenant.tags.map((tag: string) => (
+            <span key={tag} style={{ border: '1px solid var(--color-line)', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.82rem', color: 'var(--color-text-secondary)' }}>{tag}</span>
+          ))}
+        </div>
+      )}
+
+      {tenant.description && (
+        <>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 700, letterSpacing: '-0.01em', margin: '0.5rem 0 0.6rem' }}>Sobre nosotros</h2>
+          <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6, maxWidth: '60ch' }}>
+            {tenant.description}
+          </p>
+        </>
+      )}
     </div>
   )
 
@@ -133,34 +162,34 @@ export default function StorefrontClient({ tenant, primaryColor, fontVar, servic
     <div style={{ ...cardStyle, alignSelf: 'start', marginTop: layoutStyle === 'minimal' ? 0 : '20px' }}>
       {tenant.address && (
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div style={{ color: 'var(--color-primary)', fontSize: '1.2rem' }}><MapPin size={20} /></div>
+          <div style={{ color: 'var(--color-primary)', flexShrink: 0 }}><MapPin size={20} strokeWidth={1.75} /></div>
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Dirección</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginBottom: '0.3rem' }}>{tenant.address}</div>
-            {tenant.map_url && <a href={tenant.map_url} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', fontSize: '0.85rem', textDecoration: 'none' }}>Ver dirección</a>}
+            {tenant.map_url && <a href={tenant.map_url} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', fontSize: '0.85rem', textDecoration: 'none', fontWeight: 600 }}>Ver en el mapa</a>}
           </div>
         </div>
       )}
-      
+
       {(tenant.whatsapp || tenant.phone) && (
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div style={{ color: 'var(--color-primary)', fontSize: '1.2rem' }}>
-            <Phone size={20} />
+          <div style={{ color: 'var(--color-primary)', flexShrink: 0 }}>
+            <Phone size={20} strokeWidth={1.75} />
           </div>
           <div>
             <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Contacto</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+              <div style={{ ...mono, fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
                 {formatPhoneNumber(tenant.whatsapp || tenant.phone)}
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 {tenant.whatsapp && (
-                  <a href={`https://wa.me/${tenant.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{ background: '#25D366', color: '#fff', width: '42px', height: '30px', borderRadius: '6px', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)', transition: 'transform 0.2s' }}>
+                  <a href={`https://wa.me/${tenant.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" aria-label="Escribir por WhatsApp" style={{ background: '#25D366', color: '#fff', width: '42px', height: '30px', borderRadius: '6px', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <BrandIcon name="whatsapp" size={16} />
                   </a>
                 )}
                 {tenant.phone && (
-                  <a href={`tel:${tenant.phone}`} style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>Llamar</a>
+                  <a href={`tel:${tenant.phone}`} style={{ border: '1px solid var(--color-line)', color: 'var(--color-text-primary)', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center' }}>Llamar</a>
                 )}
               </div>
             </div>
@@ -170,22 +199,22 @@ export default function StorefrontClient({ tenant, primaryColor, fontVar, servic
 
       {(tenant.instagram || tenant.facebook || tenant.tiktok) && (
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div style={{ color: 'var(--color-primary)', fontSize: '1.2rem' }}><Share2 size={20} /></div>
+          <div style={{ color: 'var(--color-primary)', flexShrink: 0 }}><Share2 size={20} strokeWidth={1.75} /></div>
           <div>
-            <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Redes Sociales</div>
+            <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Redes sociales</div>
             <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
               {tenant.instagram && (
-                <a href={`https://instagram.com/${tenant.instagram.replace('@','')}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-text-primary)', textDecoration: 'none' }} title="Instagram">
+                <a href={`https://instagram.com/${tenant.instagram.replace('@','')}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-text-primary)', textDecoration: 'none' }} aria-label="Instagram">
                   <BrandIcon name="instagram" />
                 </a>
               )}
               {tenant.facebook && (
-                <a href={tenant.facebook.startsWith('http') ? tenant.facebook : `https://facebook.com/${tenant.facebook}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-text-primary)', textDecoration: 'none' }} title="Facebook">
+                <a href={tenant.facebook.startsWith('http') ? tenant.facebook : `https://facebook.com/${tenant.facebook}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-text-primary)', textDecoration: 'none' }} aria-label="Facebook">
                   <BrandIcon name="facebook" />
                 </a>
               )}
               {tenant.tiktok && (
-                <a href={tenant.tiktok.startsWith('http') ? tenant.tiktok : `https://tiktok.com/@${tenant.tiktok.replace('@','')}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-text-primary)', textDecoration: 'none' }} title="TikTok">
+                <a href={tenant.tiktok.startsWith('http') ? tenant.tiktok : `https://tiktok.com/@${tenant.tiktok.replace('@','')}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-text-primary)', textDecoration: 'none' }} aria-label="TikTok">
                   <BrandIcon name="tiktok" />
                 </a>
               )}
@@ -194,347 +223,196 @@ export default function StorefrontClient({ tenant, primaryColor, fontVar, servic
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div style={{ color: 'var(--color-primary)', fontSize: '1.2rem' }}><Clock size={20} /></div>
+      <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ color: 'var(--color-primary)', flexShrink: 0 }}><Clock size={20} strokeWidth={1.75} /></div>
         <div>
           <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>Horario hoy</div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>09:00 - 20:00 (Varía por profesional)</div>
+          <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}><span style={mono}>09:00–20:00</span> · varía por profesional</div>
         </div>
       </div>
     </div>
   )
 
   const ServicesList = () => (
-    <div style={{ marginBottom: '4rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-        <Sparkles size={20} style={{ color: 'var(--color-primary)' }} />
-        <h2 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>Servicios</h2>
+    <section style={{ marginBottom: '4rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.5rem' }}>
+        <Sparkles size={20} strokeWidth={1.75} style={{ color: 'var(--color-primary)' }} />
+        <h2 style={{ fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>Servicios</h2>
       </div>
 
-      <div style={{ 
-        display: 'flex', 
-        gap: '1.5rem', 
-        overflowX: 'auto', 
-        paddingBottom: '2rem',
-        paddingLeft: '0.5rem',
-        paddingRight: '0.5rem',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none'
-      }}>
+      <div className="store-scroll" style={{ display: 'flex', gap: '1.25rem', overflowX: 'auto', paddingBottom: '1rem' }}>
         {services.map(s => (
-          <div 
-            key={s.id} 
+          <article
+            key={s.id}
             className="store-service-card"
-            style={{ 
-              ...cardStyle, 
-              minWidth: '230px', 
-              flex: '0 0 auto', 
-              display: 'flex', 
-              flexDirection: 'column', 
+            style={{
+              ...cardStyle,
+              minWidth: '250px',
+              flex: '0 0 auto',
+              display: 'flex',
+              flexDirection: 'column',
               justifyContent: 'space-between',
-              position: 'relative',
-              overflow: 'hidden',
-              transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
-              cursor: 'default',
-              padding: '1.25rem'
+              padding: '1.35rem'
             }}
           >
-            {/* Decorative Icon Background */}
-            <div style={{ 
-              position: 'absolute', 
-              top: '-5px', 
-              right: '-5px', 
-              opacity: 0.05, 
-              color: 'var(--color-primary)',
-              transform: 'rotate(-15deg)',
-              pointerEvents: 'none'
-            }}>
-              <Scissors size={60} strokeWidth={1} />
+            <div>
+              <div style={{ width: 38, height: 38, borderRadius: '9px', background: 'var(--color-bg-base)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-line)', marginBottom: '0.9rem' }}>
+                <Scissors size={18} strokeWidth={1.75} />
+              </div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, letterSpacing: '-0.01em', marginBottom: '0.35rem' }}>{s.name}</h3>
+              {s.description && (
+                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: 1.45, marginBottom: '0.5rem' }}>
+                  {s.description}
+                </p>
+              )}
             </div>
 
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                <div style={{ 
-                  width: 40, height: 40, borderRadius: '10px', 
-                  background: 'var(--color-bg-base)', color: 'var(--color-primary)', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                  fontSize: '1.2rem', border: '1px solid var(--color-border)',
-                  boxShadow: '0 4px 10px rgba(0,0,0,0.05)'
-                }}>
-                  <Scissors size={20} strokeWidth={1.5} />
-                </div>
-                <span style={{ 
-                  background: 'rgba(212, 175, 55, 0.15)', 
-                  color: 'var(--color-primary)', 
-                  padding: '0.3rem 0.6rem', 
-                  borderRadius: '10px', 
-                  fontSize: '0.65rem', 
-                  fontWeight: 700, 
-                  letterSpacing: '0.05em',
-                  border: '1px solid rgba(212, 175, 55, 0.2)' 
-                }}>
-                  POPULAR
-                </span>
-              </div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.4rem', fontFamily: 'var(--font-display)' }}>{s.name}</h3>
-              <p style={{ 
-                fontSize: '0.85rem', 
-                color: 'var(--color-text-secondary)', 
-                marginBottom: '1rem', 
-                minHeight: '2.5em',
-                lineHeight: 1.4 
-              }}>
-                {s.description || 'Experiencia premium garantizada por nuestros profesionales.'}
-              </p>
-            </div>
-            
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              borderTop: '1px solid var(--color-glass-border)', 
-              paddingTop: '1.5rem', 
-              marginTop: 'auto',
-              position: 'relative',
-              zIndex: 1 
-            }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid var(--color-line)', paddingTop: '1.1rem', marginTop: '1.25rem' }}>
               <div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <Clock size={14} /> {s.duration_mins} min
+                <div style={{ ...mono, fontSize: '0.78rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <Clock size={13} strokeWidth={1.75} /> {s.duration_mins} min
                 </div>
-                <div style={{ fontWeight: 800, fontSize: '1.4rem', color: 'var(--color-text-primary)', marginTop: '0.2rem' }}>
-                  ${Number(s.base_price).toLocaleString()}
+                <div style={{ ...mono, fontWeight: 600, fontSize: '1.35rem', color: 'var(--color-text-primary)', marginTop: '0.15rem' }}>
+                  ${formatMoney(s.base_price)}
                 </div>
               </div>
-              <button 
-                onClick={() => openBooking(s.id)} 
+              <button
+                onClick={() => openBooking(s.id)}
                 className="btn-reservar-vitrina"
-                style={{ 
-                  background: 'var(--color-primary)', 
-                  color: '#fff', 
-                  border: 'none', 
-                  padding: '0.8rem 1.75rem', 
-                  borderRadius: '14px', 
-                  fontWeight: 700, 
-                  cursor: 'pointer',
-                  boxShadow: `0 8px 16px ${primaryColor}44`,
-                  transition: 'all 0.3s ease'
-                }}
+                style={{ background: 'var(--color-primary)', color: onPrimary, border: 'none', padding: '0.6rem 1.15rem', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
               >
                 Reservar
               </button>
             </div>
-          </div>
+          </article>
         ))}
       </div>
-    </div>
+    </section>
   )
 
   const StaffListGroup = () => (
-    <div style={{ marginBottom: '4rem' }}>
-      <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '2rem', letterSpacing: '-0.02em' }}>Nuestros Profesionales</h2>
-      <div style={{ 
-        display: 'flex', 
-        gap: '1.75rem', 
-        overflowX: 'auto', 
-        paddingBottom: '2rem', 
-        paddingLeft: '0.5rem',
-        paddingRight: '0.5rem',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none'
-      }}>
+    <section style={{ marginBottom: '4rem' }}>
+      <h2 style={{ fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '1.5rem' }}>Nuestros profesionales</h2>
+      <div className="store-scroll" style={{ display: 'flex', gap: '1.25rem', overflowX: 'auto', paddingBottom: '1rem' }}>
         {staffList.map(st => {
           const initials = st.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase();
-          
+          const rating = typeof st.rating === 'number' && st.rating > 0 ? st.rating : null;
+
           return (
-            <div 
-              key={st.id} 
-              onClick={() => openProfile(st)} 
-              style={{ 
-                ...cardStyle, 
-                minWidth: '260px', 
-                flex: '0 0 auto', 
-                textAlign: 'center', 
-                cursor: 'pointer', 
-                transition: 'all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1)',
-                position: 'relative',
+            <article
+              key={st.id}
+              onClick={() => openProfile(st)}
+              className="store-staff-card"
+              style={{
+                ...cardStyle,
+                minWidth: '250px',
+                flex: '0 0 auto',
+                textAlign: 'center',
+                cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center'
-              }} 
-              onMouseOver={e => {
-                e.currentTarget.style.transform = 'translateY(-10px) scale(1.02)';
-                e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.15)';
-                e.currentTarget.style.borderColor = 'var(--color-primary)';
-              }} 
-              onMouseOut={e => {
-                e.currentTarget.style.transform = 'none';
-                e.currentTarget.style.boxShadow = isLight ? '0 4px 6px -1px rgba(0, 0, 0, 0.05)' : 'none';
-                e.currentTarget.style.borderColor = 'var(--color-border)';
               }}
             >
-              {/* Avatar Container */}
-              <div style={{ 
-                width: 110, 
-                height: 110, 
-                borderRadius: '50%', 
-                background: 'var(--color-bg-base)', 
-                marginBottom: '1.5rem', 
-                overflow: 'hidden', 
-                padding: '4px', 
-                border: `2px solid var(--color-primary-muted)`,
-                boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
+              <div style={{ width: 104, height: 104, borderRadius: '50%', background: 'var(--color-bg-base)', marginBottom: '1.25rem', overflow: 'hidden', padding: '4px', border: `1px solid var(--color-line)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {st.avatar_url ? (
                   <img src={st.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt={st.name} />
                 ) : (
-                  <div style={{
-                    width: '100%', 
-                    height: '100%', 
-                    borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, var(--color-bg-muted) 0%, var(--color-border) 100%)', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    fontSize: '1.8rem',
-                    fontWeight: 700,
-                    color: 'var(--color-text-primary)',
-                    letterSpacing: '0.05em'
-                  }}>
+                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--color-bg-deep)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.7rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
                     {initials}
                   </div>
                 )}
               </div>
 
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.5rem', color: 'var(--color-text-primary)' }}>{st.name}</h3>
-              
-              {/* Specialty Badge */}
-              <div style={{ 
-                fontSize: '0.7rem', 
-                color: 'var(--color-primary)', 
-                fontWeight: 700, 
-                letterSpacing: '0.08em',
-                marginBottom: '1rem',
-                textTransform: 'uppercase',
-                background: 'rgba(201,168,76,0.1)',
-                padding: '0.35rem 0.8rem',
-                borderRadius: '20px',
-                border: '1px solid rgba(201,168,76,0.15)'
-              }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, letterSpacing: '-0.01em', marginBottom: '0.45rem' }}>{st.name}</h3>
+
+              <div style={{ ...label, color: 'var(--color-primary)', marginBottom: '1rem' }}>
                 {st.specialty || 'Profesional'}
               </div>
 
               {st.bio && (
-                <p style={{ 
-                  fontSize: '0.85rem', 
-                  color: 'var(--color-text-secondary)', 
-                  lineHeight: 1.5, 
-                  marginBottom: '1.5rem',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                  minHeight: '3em',
-                  padding: '0 0.5rem'
-                }}>
+                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: 1.5, marginBottom: '1.25rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.6em' }}>
                   {st.bio}
                 </p>
               )}
 
-              {/* Bottom Row: Rating & Social */}
-              <div style={{ 
-                marginTop: 'auto', 
-                width: '100%', 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                gap: '1.25rem',
-                paddingTop: '1rem',
-                borderTop: '1px solid var(--color-glass-border)'
-              }}>
-                <div style={{ fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <span style={{ color: '#f59e0b', fontSize: '1.1rem' }}>★</span> 5.0
-                </div>
-                
-                {st.instagram && (
-                  <>
-                    <div style={{ width: '1px', height: '14px', background: 'var(--color-border)' }} />
-                    <a 
-                      href={`https://instagram.com/${st.instagram.replace('@','')}`} 
-                      target="_blank" 
-                      rel="noreferrer" 
+              {(rating || st.instagram) && (
+                <div style={{ marginTop: 'auto', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-line)' }}>
+                  {rating && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Stars value={rating} size={13} />
+                      <span style={{ ...mono, fontSize: '0.82rem', fontWeight: 600 }}>{rating.toFixed(1)}</span>
+                    </div>
+                  )}
+                  {rating && st.instagram && <span style={{ width: '1px', height: '14px', background: 'var(--color-line)' }} />}
+                  {st.instagram && (
+                    <a
+                      href={`https://instagram.com/${st.instagram.replace('@','')}`}
+                      target="_blank"
+                      rel="noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      style={{ 
-                        color: 'var(--color-text-secondary)', 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.color = 'var(--color-primary)'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+                      aria-label={`Instagram de ${st.name}`}
+                      style={{ color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center' }}
                     >
-                      <BrandIcon name="instagram" size={20} />
+                      <BrandIcon name="instagram" size={18} />
                     </a>
-                  </>
-                )}
-              </div>
-            </div>
+                  )}
+                </div>
+              )}
+            </article>
           );
         })}
       </div>
-    </div>
+    </section>
   )
 
   const ReviewsList = () => (
-    <div style={{ marginBottom: '2rem' }}>
-      <h2 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '1.5rem' }}>Reseñas</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(150px, 200px) 1fr', gap: '2rem', alignItems: 'center', marginBottom: '2rem' }}>
+    <section style={{ marginBottom: '2rem' }}>
+      <h2 style={{ fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '1.5rem' }}>Reseñas</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 190px) 1fr', gap: '2rem', alignItems: 'center', marginBottom: '2rem' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', fontWeight: 800, color: '#f59e0b' }}>{avgRating}</div>
-          <div style={{ color: '#f59e0b', fontSize: '1.5rem', margin: '0.5rem 0' }}>{'⭐'.repeat(Math.round(parseFloat(avgRating)) || 0)}</div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{totalReviews} reseñas</div>
+          <div style={{ ...mono, fontSize: '3rem', fontWeight: 700, lineHeight: 1, color: 'var(--color-text-primary)' }}>{avgRating}</div>
+          <div style={{ margin: '0.6rem 0', display: 'flex', justifyContent: 'center' }}><Stars value={roundedAvg} size={18} /></div>
+          <div style={{ ...mono, fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>{totalReviews} reseñas</div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
           {ratingBars.map(bar => (
-            <div key={bar.s} style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.85rem' }}>
-              <span style={{ width: 15 }}>{bar.s}★</span>
-              <div style={{ flex: 1, height: '8px', background: 'var(--color-border)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: `${bar.p}%`, height: '100%', background: '#f59e0b', transition: 'width 0.5s' }}></div>
+            <div key={bar.s} style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', fontSize: '0.82rem' }}>
+              <span style={{ ...mono, width: 26, display: 'inline-flex', alignItems: 'center', gap: '2px', color: 'var(--color-text-muted)' }}>{bar.s}<Star size={11} strokeWidth={0} fill="var(--color-primary)" /></span>
+              <div style={{ flex: 1, height: '6px', background: 'var(--color-line)', borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{ width: `${bar.p}%`, height: '100%', background: 'var(--color-primary)' }} />
               </div>
-              <span style={{ width: 30, textAlign: 'right', color: 'var(--color-text-muted)' }}>{bar.p}%</span>
+              <span style={{ ...mono, width: 34, textAlign: 'right', color: 'var(--color-text-muted)' }}>{bar.p}%</span>
             </div>
           ))}
         </div>
       </div>
-      <div style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', paddingBottom: '1rem' }}>
-        {totalReviews === 0 ? (
-            <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', padding: '1rem 0' }}>Esta barbería aún no cuenta con reseñas.</p>
-        ) : (
-          reviews.map(r => (
-            <div key={r.id} style={{ ...cardStyle, minWidth: '300px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                <div style={{ width: 40, height: 40, background: '#e0e7ff', color: '#3730a3', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}>
+      {totalReviews === 0 ? (
+        <p style={{ color: 'var(--color-text-muted)', padding: '1rem 0' }}>Esta barbería aún no tiene reseñas. Sé el primero en dejar la tuya después de tu cita.</p>
+      ) : (
+        <div className="store-scroll" style={{ display: 'flex', gap: '1.25rem', overflowX: 'auto', paddingBottom: '1rem' }}>
+          {reviews.map(r => (
+            <div key={r.id} style={{ ...cardStyle, minWidth: '290px', flex: '0 0 auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '0.9rem' }}>
+                <div style={{ width: 40, height: 40, background: 'var(--color-bg-base)', border: '1px solid var(--color-line)', color: 'var(--color-text-primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.05rem', fontWeight: 700, flexShrink: 0 }}>
                   {r.customer_name.charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{r.customer_name}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{new Date(r.created_at).toLocaleDateString()}</div>
+                  <div style={{ ...mono, fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>{formatDate(r.created_at)}</div>
                 </div>
               </div>
-              <div style={{ color: '#f59e0b', fontSize: '0.9rem', marginBottom: '0.8rem' }}>{'⭐'.repeat(r.rating)}</div>
+              <div style={{ marginBottom: '0.75rem' }}><Stars value={r.rating} size={14} /></div>
               {r.comment && (
-                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
-                  "{r.comment}"
+                <p style={{ fontSize: '0.88rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+                  “{r.comment}”
                 </p>
               )}
             </div>
-          ))
-        )}
-      </div>
-    </div>
+          ))}
+        </div>
+      )}
+    </section>
   )
 
   const ContentBelowInfo = () => (
@@ -542,8 +420,8 @@ export default function StorefrontClient({ tenant, primaryColor, fontVar, servic
       <ServicesList />
       <StaffListGroup />
       <ReviewsList />
-      <BookingModal 
-        isOpen={modalOpen} onClose={() => setModalOpen(false)} 
+      <BookingModal
+        isOpen={modalOpen} onClose={() => setModalOpen(false)}
         tenant={tenant} primaryColor={primaryColor}
         initialServiceId={initialServiceId} initialStaffId={initialStaffId}
         services={services} staffList={staffList}
@@ -551,58 +429,53 @@ export default function StorefrontClient({ tenant, primaryColor, fontVar, servic
 
       {/* Staff Profile Modal */}
       {selectedStaffForProfile && (
-        <div 
+        <div
           onClick={() => setSelectedStaffForProfile(null)}
           style={{
             position: 'fixed', inset: 0, zIndex: 10000,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', padding: '1rem',
+            background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)', padding: '1rem',
             animation: 'fadeIn 0.3s ease-out',
             cursor: 'zoom-out'
           }}
         >
-          <div 
+          <div
             onClick={(e) => e.stopPropagation()}
-            style={{ 
-              width: '100%', maxWidth: 500, background: 'var(--color-bg-base)', 
-              border: '1px solid var(--color-border)', borderRadius: '24px', 
-              overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
+            style={{
+              width: '100%', maxWidth: 480, background: 'var(--color-bg-base)',
+              border: '1px solid var(--color-line)', borderRadius: '20px',
+              overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.28)',
               position: 'relative', animation: 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
               cursor: 'default'
             }}
           >
-            <button 
-              onClick={() => setSelectedStaffForProfile(null)} 
-              style={{ 
-                position: 'absolute', top: '1.25rem', right: '1.25rem', 
-                background: 'rgba(0,0,0,0.3)', border: 'none', borderRadius: '50%', 
-                width: '36px', height: '36px', display: 'flex', alignItems: 'center', 
-                justifyContent: 'center', cursor: 'pointer', zIndex: 10, color: '#fff',
-                fontSize: '1rem', fontWeight: 'bold', backdropFilter: 'blur(4px)',
-                transition: 'all 0.2s ease'
+            <button
+              onClick={() => setSelectedStaffForProfile(null)}
+              aria-label="Cerrar"
+              style={{
+                position: 'absolute', top: '1rem', right: '1rem',
+                background: 'var(--color-bg-deep)', border: '1px solid var(--color-line)', borderRadius: '50%',
+                width: '34px', height: '34px', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', cursor: 'pointer', zIndex: 10, color: 'var(--color-text-primary)',
+                fontSize: '0.95rem'
               }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.5)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.3)'}
             >
               ✕
             </button>
 
-            {/* Profile Header Background */}
-            <div style={{ height: '140px', background: `linear-gradient(135deg, ${primaryColor}22 0%, rgba(0,0,0,0) 100%)`, position: 'absolute', top: 0, left: 0, right: 0 }} />
-
-            <div style={{ padding: '3rem 2rem 2rem', position: 'relative', zIndex: 1, textAlign: 'center' }}>
-              <div style={{ width: 140, height: 140, borderRadius: '50%', background: 'var(--color-bg-base)', margin: '0 auto 1.5rem', padding: '6px', border: `3px solid ${primaryColor}`, boxShadow: '0 12px 24px rgba(0,0,0,0.2)' }}>
+            <div style={{ padding: '2.5rem 2rem 2rem', position: 'relative', zIndex: 1, textAlign: 'center' }}>
+              <div style={{ width: 132, height: 132, borderRadius: '50%', background: 'var(--color-bg-deep)', margin: '0 auto 1.25rem', padding: '5px', border: `1px solid var(--color-line)` }}>
                 {selectedStaffForProfile.avatar_url ? (
-                  <img src={selectedStaffForProfile.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt="Profile" />
+                  <img src={selectedStaffForProfile.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} alt={selectedStaffForProfile.name} />
                 ) : (
-                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 700 }}>
+                  <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--color-bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.4rem', fontWeight: 700 }}>
                     {selectedStaffForProfile.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
                   </div>
                 )}
               </div>
 
-              <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.25rem' }}>{selectedStaffForProfile.name}</h2>
-              <div style={{ color: primaryColor, fontWeight: 700, letterSpacing: '0.1em', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.35rem' }}>{selectedStaffForProfile.name}</h2>
+              <div style={{ ...label, color: 'var(--color-primary)', marginBottom: '1.5rem' }}>
                 {selectedStaffForProfile.specialty || 'Profesional'}
               </div>
 
@@ -611,37 +484,28 @@ export default function StorefrontClient({ tenant, primaryColor, fontVar, servic
                   {selectedStaffForProfile.bio}
                 </p>
               ) : (
-                <p style={{ color: 'var(--color-text-muted)', fontStyle: 'italic', marginBottom: '2rem' }}>
+                <p style={{ color: 'var(--color-text-muted)', marginBottom: '2rem' }}>
                   Este profesional aún no ha añadido una biografía.
                 </p>
               )}
 
               {selectedStaffForProfile.instagram && (
-                <a 
-                  href={`https://instagram.com/${selectedStaffForProfile.instagram.replace('@','')}`} 
+                <a
+                  href={`https://instagram.com/${selectedStaffForProfile.instagram.replace('@','')}`}
                   target="_blank" rel="noreferrer"
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--color-text-primary)', textDecoration: 'none', marginBottom: '2.5rem', opacity: 0.8, transition: 'opacity 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                  onMouseLeave={e => e.currentTarget.style.opacity = '0.8'}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--color-text-primary)', textDecoration: 'none', marginBottom: '2rem' }}
                 >
-                  <BrandIcon name="instagram" size={24} />
+                  <BrandIcon name="instagram" size={22} />
                   <span style={{ fontWeight: 600 }}>@{selectedStaffForProfile.instagram.replace('@','')}</span>
                 </a>
               )}
 
-              <button 
+              <button
                 onClick={() => openBooking(undefined, selectedStaffForProfile.id)}
-                style={{ 
-                  width: '100%', padding: '1.25rem', borderRadius: '16px', 
-                  background: primaryColor, color: '#fff', border: 'none', 
-                  fontWeight: 800, fontSize: '1.1rem', cursor: 'pointer',
-                  boxShadow: `0 10px 30px ${primaryColor}44`,
-                  transition: 'transform 0.2s'
-                }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'none'}
+                className="btn-reservar-vitrina"
+                style={{ width: '100%', padding: '1.05rem', borderRadius: '12px', background: 'var(--color-primary)', color: onPrimary, border: 'none', fontWeight: 800, fontSize: '1.05rem', cursor: 'pointer' }}
               >
-                Reservar Cita con {selectedStaffForProfile.name.split(' ')[0]}
+                Reservar cita con {selectedStaffForProfile.name.split(' ')[0]}
               </button>
             </div>
           </div>
@@ -655,9 +519,9 @@ export default function StorefrontClient({ tenant, primaryColor, fontVar, servic
   if (layoutStyle === 'minimal') {
     return (
       <div className="storefront-root storefront-minimal" style={themeStyles}>
-        <div className="storefront-header" style={{ padding: '1rem 2rem', borderBottom: `1px solid var(--color-border)`, display: 'flex', alignItems: 'center', gap: '1.5rem', background: 'var(--color-glass)' }}>
+        <div className="storefront-header" style={{ padding: '1rem 2rem', borderBottom: `1px solid var(--color-line)`, display: 'flex', alignItems: 'center', gap: '1.5rem', background: 'var(--color-bg-deep)' }}>
           <LogoElement small />
-          <h1 className="storefront-title" style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0 }}>{tenant.name}</h1>
+          <h1 className="storefront-title" style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>{tenant.name}</h1>
         </div>
         <div className="storefront-container" style={{ maxWidth: 1000, margin: '2rem auto', padding: '0 1.5rem' }}>
           <div className="storefront-info-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
