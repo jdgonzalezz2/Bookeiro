@@ -102,7 +102,7 @@ export default function FinanceClient({ payments, appointments }: { payments: Pa
                         Abono - {appt.customer_name || 'Cliente'}
                       </p>
                       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: '2px 0 0' }}>
-                        {when ? when.toLocaleString('es-CO', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}
+                        {when ? when.toLocaleString('es-CO', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'America/Bogota' }) : '—'}
                         {svc?.name ? ` • ${svc.name}` : ''}
                       </p>
                     </div>

@@ -129,6 +129,7 @@ export default function BookingModal({
     const intent = await createDepositIntent(appointmentId)
     if ('error' in intent) {
       setBookingError('Tu cupo quedó reservado, pero no se pudo iniciar el pago: ' + intent.error)
+      setIsSubmitting(false)
       return
     }
     let WidgetCheckout: WompiCtor
@@ -136,6 +137,7 @@ export default function BookingModal({
       WidgetCheckout = await loadWompiWidget()
     } catch (e) {
       setBookingError(e instanceof Error ? e.message : 'No se pudo cargar el sistema de pago.')
+      setIsSubmitting(false)
       return
     }
     const checkout = new WidgetCheckout({
@@ -145,6 +147,8 @@ export default function BookingModal({
       publicKey: intent.publicKey,
       signature: { integrity: intent.signature },
     })
+    // El botón queda deshabilitado (isSubmitting) mientras el widget está abierto;
+    // se reactiva SOLO cuando el pago resuelve, para no abrir dos widgets.
     checkout.open((result) => {
       const status = result?.transaction?.status
       if (status === 'APPROVED') {
@@ -154,11 +158,12 @@ export default function BookingModal({
       } else {
         setBookingError('El pago no se completó. Tu horario queda reservado por 15 minutos — puedes reintentar el pago.')
       }
+      setIsSubmitting(false)
     })
   }
 
   const handleConfirm = async () => {
-    if (!selectedStaff || !selectedService || !selectedSlot) return
+    if (!selectedStaff || !selectedService || !selectedSlot || isSubmitting) return
     setIsSubmitting(true)
     setBookingError(null)
     try {
@@ -167,17 +172,21 @@ export default function BookingModal({
         const res = await submitBooking(tenant.id, selectedStaff.id, selectedService.id, customerInfo.name, customerInfo.phone, selectedSlot.startIso, selectedSlot.endIso, selectedService.base_price, customerInfo.email)
         if (res.error || !res.appointmentId) {
           setBookingError(res.error || 'No se pudo crear la reserva.')
+          setIsSubmitting(false)
           return
         }
         apptId = res.appointmentId as string
         setBookedApptId(apptId)
       }
       if (depositEnabled) {
+        // startDepositPayment gestiona isSubmitting (lo mantiene hasta que el widget resuelva).
         await startDepositPayment(apptId)
       } else {
         setBookingSuccess(true)
+        setIsSubmitting(false)
       }
-    } finally {
+    } catch {
+      setBookingError('Ocurrió un error inesperado. Intenta de nuevo.')
       setIsSubmitting(false)
     }
   }

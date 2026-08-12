@@ -86,12 +86,43 @@ export default async function handler(req: Request) {
       .eq('id', payment.id)
 
     if (status === 'APPROVED') {
-      // Confirma la cita solo si sigue pendiente (idempotente).
-      await admin.database
+      const { data: appt } = await admin.database
         .from('appointments')
-        .update({ status: 'confirmed' })
+        .select('id, staff_id, start_time, end_time, status')
         .eq('id', payment.appointment_id)
-        .eq('status', 'pending')
+        .single()
+
+      if (appt?.status === 'pending') {
+        // Caso normal: confirma la cita (idempotente por el filtro de status).
+        await admin.database
+          .from('appointments')
+          .update({ status: 'confirmed' })
+          .eq('id', appt.id)
+          .eq('status', 'pending')
+      } else if (appt?.status === 'cancelled') {
+        // Carrera: la cita expiró (barrido de 15 min) ANTES de que llegara el pago.
+        // Re-confirma si el cupo sigue libre; si otro ya lo tomó, marca el pago
+        // para reembolso manual (no se pierde el dinero en silencio).
+        const { data: clash } = await admin.database
+          .from('appointments')
+          .select('id')
+          .eq('staff_id', appt.staff_id)
+          .neq('id', appt.id)
+          .neq('status', 'cancelled')
+          .lt('start_time', appt.end_time)
+          .gt('end_time', appt.start_time)
+          .limit(1)
+        if (!clash || clash.length === 0) {
+          await admin.database.from('appointments').update({ status: 'confirmed' }).eq('id', appt.id)
+        } else {
+          await admin.database
+            .from('payments')
+            .update({ needs_refund: true, updated_at: new Date().toISOString() })
+            .eq('id', payment.id)
+          console.error(`[inspayments] Pago aprobado huérfano (cupo ya tomado) reference=${reference} → needs_refund`)
+        }
+      }
+      // 'confirmed' / 'completed' → no-op idempotente
     } else if (status === 'DECLINED' || status === 'VOIDED' || status === 'ERROR') {
       // Pago fallido: libera el cupo si la cita seguía pendiente.
       await admin.database
