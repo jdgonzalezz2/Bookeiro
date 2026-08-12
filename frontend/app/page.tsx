@@ -5,11 +5,11 @@ import { getCurrentUser } from '@/lib/auth'
 import { createDemoDay } from '@/lib/rail-core/demo'
 import { deriveLedger } from '@/lib/rail-core'
 import './landing/landing.css'
-import { ThemeToggle } from '@/components/theme-toggle'
 import TimeRailEmbed from './prototype/time-rail/TimeRailEmbed'
 import HeroSystem from './landing/HeroSystem'
 import CountUp from './landing/CountUp'
 import LandingMotion from './landing/LandingMotion'
+import LandingNav from './landing/LandingNav'
 import LandingFooter from './landing/LandingFooter'
 
 export const metadata: Metadata = {
@@ -38,31 +38,7 @@ export default async function LandingPage() {
   return (
     <div className="landing-shell">
       {/* NAV */}
-      <header className="lz-nav">
-        <div className="lz-nav-inner">
-          <Link href="/" className="lz-wordmark" aria-label="Bookeiro">
-            <span className="lz-mark" aria-hidden />
-            Bookeiro
-          </Link>
-          <nav aria-label="Secciones">
-            <ul className="lz-nav-links">
-              <li><a href="#demo">La agenda</a></li>
-              <li><a href="#caja">Caja</a></li>
-              <li><a href="#producto">Producto</a></li>
-            </ul>
-          </nav>
-          <div className="lz-nav-actions">
-            <ThemeToggle />
-            {!user && (
-              <Link href="/login" className="lz-btn lz-btn-ghost">Entrar</Link>
-            )}
-            <Link href={primaryHref} className="lz-btn lz-btn-primary">
-              {primaryLabel}
-              <ArrowUpRight size={16} className="lz-arrow" />
-            </Link>
-          </div>
-        </div>
-      </header>
+      <LandingNav />
 
       {/* HERO */}
       <section className="lz-hero">
