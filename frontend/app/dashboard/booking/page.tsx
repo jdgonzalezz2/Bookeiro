@@ -59,7 +59,7 @@ export default async function BookingDashboardPage() {
         <RailStatePanel
           tone="error"
           title="No pudimos cargar la agenda"
-          message={`Ocurrió un problema al leer tus datos: ${result.message}. Vuelve a intentarlo en un momento.`}
+          message={result.message}
         />
       )}
     </div>

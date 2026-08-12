@@ -20,6 +20,8 @@ import type { createInsForgeServerClient } from '@/lib/insforge-server'
 
 const BOGOTA_OFFSET_HOURS = -5
 const DAY_MS = 24 * 60 * 60 * 1000
+/** User-facing read error — never leaks DB/exception internals. */
+const READ_ERROR_MESSAGE = 'No pudimos cargar tu agenda en este momento. Vuelve a intentarlo.'
 
 /** The already-authenticated InsForge server client (read-only usage here). */
 type InsForgeClient = ReturnType<typeof createInsForgeServerClient>
@@ -86,7 +88,9 @@ export async function loadRealRailDay(
     const firstError =
       tenantRes?.error || staffRes?.error || servicesRes?.error || apptRes?.error || hoursRes?.error
     if (firstError) {
-      return { status: 'error', message: firstError.message ?? 'No se pudo cargar la agenda.' }
+      // Log the raw error server-side; never surface DB internals to the user.
+      console.error('[loadRealRailDay] query error for tenant', tenantId, firstError)
+      return { status: 'error', message: READ_ERROR_MESSAGE }
     }
 
     const tenant = (tenantRes?.data as { name?: string; slug?: string }[] | null)?.[0]
@@ -114,7 +118,8 @@ export async function loadRealRailDay(
 
     return { status: 'ok', day }
   } catch (e) {
-    const message = e instanceof Error ? e.message : 'No se pudo cargar la agenda.'
-    return { status: 'error', message }
+    // Log the raw exception server-side; return a safe, user-facing message.
+    console.error('[loadRealRailDay] unexpected error for tenant', tenantId, e)
+    return { status: 'error', message: READ_ERROR_MESSAGE }
   }
 }
