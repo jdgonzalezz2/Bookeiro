@@ -1,123 +1,97 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Building2, ArrowRight, ArrowDownLeft, Clock, CheckCircle2, Wallet, RefreshCw } from 'lucide-react'
+import { useMemo } from 'react'
+import Link from 'next/link'
+import { Wallet, Clock, ArrowDownLeft, ShieldCheck, Receipt, Settings } from 'lucide-react'
 
-export default function FinanceClient({ appointments }: { appointments: any[] }) {
-  const [isWithdrawing, setIsWithdrawing] = useState(false)
-  const [withdrawSuccess, setWithdrawSuccess] = useState(false)
+const cop = (v: number) =>
+  new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v || 0)
 
-  // The platform retains a 50% upfront fee.
-  const retainedBalance = useMemo(() => {
-    const totalGross = appointments.reduce((acc, curr) => acc + Number(curr.total_price || 0), 0)
-    return totalGross * 0.5 // 50% liquid balance.
-  }, [appointments])
+// El SDK de InsForge tipa las relaciones embebidas como arrays; aceptamos ambas
+// formas (objeto | array) y normalizamos en runtime.
+type SvcEmbed = { name?: string }
+type ApptEmbed = { customer_name?: string; start_time?: string; services?: SvcEmbed | SvcEmbed[] | null }
+type PaymentRow = {
+  id: string
+  amount_in_cents: number | string
+  currency?: string
+  status?: string
+  created_at?: string
+  appointments?: ApptEmbed | ApptEmbed[] | null
+}
+type ApptRow = { total_price?: number | string; status?: string }
 
-  const handleWithdraw = async () => {
-    setIsWithdrawing(true)
-    // Simulate API Call to Stripe Connect Payouts
-    await new Promise(resolve => setTimeout(resolve, 2500))
-    setIsWithdrawing(false)
-    setWithdrawSuccess(true)
-  }
+const first = <T,>(v: T | T[] | null | undefined): T | undefined =>
+  Array.isArray(v) ? v[0] : (v ?? undefined)
+
+export default function FinanceClient({ payments, appointments }: { payments: PaymentRow[]; appointments: ApptRow[] }) {
+  // Abonos REALES cobrados en línea (aprobados), en COP.
+  const abonos = useMemo(
+    () => payments.reduce((acc, p) => acc + Number(p.amount_in_cents || 0), 0) / 100,
+    [payments]
+  )
+  // Total facturado por citas confirmadas/completadas (real).
+  const facturado = useMemo(
+    () => appointments.reduce((acc, c) => acc + Number(c.total_price || 0), 0),
+    [appointments]
+  )
+
+  const statCard = (label: string, value: string, hint: string, icon: React.ReactNode) => (
+    <div style={{ flex: '1 1 240px', background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: '20px', padding: '1.75rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '0.82rem', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+        {icon} {label}
+      </div>
+      <div style={{ fontSize: '2.4rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)', letterSpacing: '-0.02em', lineHeight: 1 }}>
+        {value}
+      </div>
+      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', marginTop: '0.6rem' }}>{hint}</p>
+    </div>
+  )
 
   return (
     <div style={{ animation: 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }}>
-      {/* BALANCE CARD */}
-      <div style={{ 
-        background: 'linear-gradient(145deg, var(--color-bg-card) 0%, #1a1a24 100%)', 
-        border: '1px solid var(--color-glass-border)', 
-        borderRadius: '24px', 
-        padding: '3rem 2rem', 
-        marginBottom: '2rem',
-        position: 'relative',
-        overflow: 'hidden',
-        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)'
-      }}>
-        {/* Ambient glow */}
-        <div style={{ position: 'absolute', top: '-50%', left: '-10%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(201,168,76,0.1) 0%, transparent 70%)', filter: 'blur(40px)', zIndex: 0, pointerEvents: 'none' }}></div>
-        
-        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '2rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              <Wallet size={16} /> Saldo Líquido Disponible
-            </div>
-            <h1 style={{ fontSize: '4rem', fontWeight: 800, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
-              ${retainedBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              <span style={{ fontSize: '1.5rem', color: 'var(--color-text-muted)', fontWeight: 500 }}> USD</span>
-            </h1>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-              Monto recaudado de reservas online (50% de anticipo de clientes).
-            </p>
-          </div>
+      {/* MÉTRICAS REALES */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '1.5rem' }}>
+        {statCard('Abonos cobrados en línea', cop(abonos), 'Anticipos pagados por tus clientes al reservar.', <Wallet size={16} />)}
+        {statCard('Total facturado', cop(facturado), 'Suma de citas confirmadas y completadas.', <Receipt size={16} />)}
+      </div>
 
-          <div style={{ minWidth: '240px' }}>
-            {withdrawSuccess ? (
-              <div style={{ background: 'rgba(46, 204, 113, 0.1)', border: '1px solid rgba(46, 204, 113, 0.3)', padding: '1.25rem', borderRadius: '16px', color: '#2ecc71', display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 600 }}>
-                <CheckCircle2 size={24} /> Transferencia Iniciada
-              </div>
-            ) : (
-              <button 
-                onClick={handleWithdraw}
-                disabled={isWithdrawing || retainedBalance === 0}
-                style={{ 
-                  width: '100%',
-                  background: 'var(--gradient-brand)', 
-                  color: '#000', 
-                  border: 'none', 
-                  borderRadius: '16px', 
-                  padding: '1.25rem', 
-                  fontWeight: 700, 
-                  fontSize: '1.05rem',
-                  cursor: isWithdrawing || retainedBalance === 0 ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  boxShadow: '0 8px 20px -5px rgba(201,168,76,0.4)',
-                  opacity: retainedBalance === 0 ? 0.5 : 1
-                }}
-              >
-                {isWithdrawing ? (
-                  <>
-                    <RefreshCw size={20} className="animate-spin" /> Procesando Payout...
-                  </>
-                ) : (
-                  <>
-                     Retirar a Banco <ArrowRight size={20} />
-                  </>
-                )}
-              </button>
-            )}
-            {!withdrawSuccess && (
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.75rem', marginTop: '0.7rem', justifyContent: 'center' }}>
-                  <Building2 size={12} /> Depositado en terminación **1424 (ACH)
-               </div>
-            )}
-          </div>
+      {/* NOTA HONESTA: modelo de cuenta conectada */}
+      <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start', background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '1.25rem 1.5rem', marginBottom: '2rem' }}>
+        <div style={{ color: 'var(--color-primary)', flexShrink: 0, marginTop: 2 }}><ShieldCheck size={20} /></div>
+        <div>
+          <p style={{ fontWeight: 600, color: 'var(--color-text-primary)', margin: 0, fontSize: '0.95rem' }}>Tus abonos llegan directo a tu cuenta de Wompi.</p>
+          <p style={{ color: 'var(--color-text-secondary)', margin: '0.25rem 0 0', fontSize: '0.88rem' }}>
+            Bookeiro no retiene tu dinero ni cobra comisión por transacción. No hay saldo que retirar: cada pago se deposita en tu cuenta según los tiempos de Wompi.
+          </p>
         </div>
       </div>
 
-      {/* TRANSACTIONS LIST */}
+      {/* HISTORIAL REAL DE ABONOS */}
       <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1.2rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <Clock size={18} className="text-primary" /> Historial de Cobros Recientes
+        <Clock size={18} /> Abonos recibidos
       </h3>
-      
+
       <div style={{ background: 'var(--color-glass)', border: '1px solid var(--color-glass-border)', borderRadius: '16px', overflow: 'hidden' }}>
-        {appointments.length === 0 ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-            No hay desembolsos registrados aún.
+        {payments.length === 0 ? (
+          <div style={{ padding: '3rem 1.5rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+            <p style={{ margin: '0 0 1rem' }}>Aún no has recibido abonos en línea.</p>
+            <Link href="/dashboard/pagos" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}>
+              <Settings size={16} /> Configurar cobros con abono
+            </Link>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {appointments.map((app, i) => {
-              const upfrontPayment = Number(app.total_price || 0) * 0.5
+            {payments.map((p, i) => {
+              const appt = first(p.appointments) || {}
+              const svc = first(appt.services)
+              const amount = Number(p.amount_in_cents || 0) / 100
+              const when = p.created_at ? new Date(p.created_at) : (appt.start_time ? new Date(appt.start_time) : null)
               return (
-                <div key={app.id} style={{ 
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-                  padding: '1.25rem 1.5rem', 
-                  borderBottom: i !== appointments.length - 1 ? '1px solid var(--color-glass-border)' : 'none',
-                  background: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.01)'
+                <div key={p.id} style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '1.25rem 1.5rem',
+                  borderBottom: i !== payments.length - 1 ? '1px solid var(--color-glass-border)' : 'none',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(46, 204, 113, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2ecc71' }}>
@@ -125,20 +99,21 @@ export default function FinanceClient({ appointments }: { appointments: any[] })
                     </div>
                     <div>
                       <p style={{ fontWeight: 600, color: 'var(--color-text-primary)', margin: 0, fontSize: '0.95rem' }}>
-                        Cobro reserva - {app.customer_name}
+                        Abono - {appt.customer_name || 'Cliente'}
                       </p>
-                      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: 0, marginTop: '2px' }}>
-                        {new Date(app.start_time).toLocaleString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' })} • {app.services?.name}
+                      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: '2px 0 0' }}>
+                        {when ? when.toLocaleString('es-CO', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}
+                        {svc?.name ? ` • ${svc.name}` : ''}
                       </p>
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                     <div style={{ fontWeight: 700, color: '#2ecc71', fontSize: '1.05rem' }}>
-                        +${upfrontPayment.toFixed(2)}
-                     </div>
-                     <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '10px', display: 'inline-block', marginTop: '4px' }}>
-                       Completado
-                     </div>
+                    <div style={{ fontWeight: 700, color: '#2ecc71', fontSize: '1.05rem', fontVariantNumeric: 'tabular-nums' }}>
+                      +{cop(amount)}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '10px', display: 'inline-block', marginTop: '4px' }}>
+                      Aprobado
+                    </div>
                   </div>
                 </div>
               )
@@ -146,7 +121,6 @@ export default function FinanceClient({ appointments }: { appointments: any[] })
           </div>
         )}
       </div>
-
     </div>
   )
 }
