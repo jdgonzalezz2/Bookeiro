@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Scissors, FileText, Users, Calendar, Clock, ShoppingBag, History, BarChart3, Settings, LogOut, ArrowUpRight, LayoutDashboard, ListFilter, CreditCard, Palette } from 'lucide-react'
+import { Scissors, FileText, Users, Calendar, Clock, ShoppingBag, History, BarChart3, Settings, LogOut, ArrowUpRight, LayoutDashboard, ListFilter, CreditCard, Palette, Wallet } from 'lucide-react'
 import { signOutAction } from './actions'
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -27,6 +27,7 @@ export default function Sidebar({ profile, tenant, onClose }: { profile: any, te
       roles: ['owner'],
       items: [
         { label: 'Finanzas y Caja', icon: <CreditCard size={18} strokeWidth={1.5} />, href: '/dashboard/finance' },
+        { label: 'Pagos y Cobros', icon: <Wallet size={18} strokeWidth={1.5} />, href: '/dashboard/pagos' },
         { label: 'Reportes y Analíticas', icon: <BarChart3 size={18} strokeWidth={1.5} />, href: '/dashboard/analytics' },
         { label: 'Diseño del Portal', icon: <Palette size={18} strokeWidth={1.5} />, href: '/dashboard/settings' },
       ]
