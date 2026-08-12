@@ -110,6 +110,14 @@ export default async function handler(req: Request) {
 
     const admin = createAdminClient({ baseUrl, apiKey })
 
+    // Expira citas 'pending' con abono sin pagar (+15 min) y libera el slot.
+    // Se reusa este schedule (cada ~15 min) para no crear uno aparte.
+    try {
+      await admin.database.rpc('expire_stale_pending_appointments')
+    } catch (e) {
+      console.error(`[insreminders] expire error: ${e?.message}`)
+    }
+
     const now = Date.now()
     const in24h = new Date(now + 24 * HOUR).toISOString()
     const in2h = new Date(now + 2 * HOUR).toISOString()

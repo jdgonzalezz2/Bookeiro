@@ -1,13 +1,47 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getAvailableSlots, submitBooking } from './actions'
+import { getAvailableSlots, submitBooking, createDepositIntent } from './actions'
 import { X, Check, ArrowLeft, Clock } from 'lucide-react'
 import { formatMoney, formatDate, readableOn } from './format'
 
 type Service = any
 type Staff = any
 type Slot = { startIso: string, endIso: string, label: string }
+
+// Tipos mínimos del widget de Wompi (script externo, sin tipos propios).
+type WompiResult = { transaction?: { status?: string } }
+interface WompiCheckout { open: (cb: (r: WompiResult) => void) => void }
+type WompiCtor = new (opts: {
+  currency: string
+  amountInCents: number
+  reference: string
+  publicKey: string
+  signature: { integrity: string }
+}) => WompiCheckout
+
+// Carga perezosa del widget de Wompi. Resuelve con el constructor global
+// WidgetCheckout. Se carga una sola vez.
+function loadWompiWidget(): Promise<WompiCtor> {
+  return new Promise((resolve, reject) => {
+    const w = window as unknown as { WidgetCheckout?: WompiCtor }
+    const fail = () => reject(new Error('No se pudo cargar el sistema de pago.'))
+    if (w.WidgetCheckout) return resolve(w.WidgetCheckout)
+    const existing = document.querySelector<HTMLScriptElement>('script[data-wompi]')
+    if (existing) {
+      existing.addEventListener('load', () => (w.WidgetCheckout ? resolve(w.WidgetCheckout) : fail()))
+      existing.addEventListener('error', fail)
+      return
+    }
+    const s = document.createElement('script')
+    s.src = 'https://checkout.wompi.co/widget.js'
+    s.async = true
+    s.setAttribute('data-wompi', '1')
+    s.onload = () => (w.WidgetCheckout ? resolve(w.WidgetCheckout) : fail())
+    s.onerror = fail
+    document.body.appendChild(s)
+  })
+}
 
 export default function BookingModal({
   tenant,
@@ -42,6 +76,13 @@ export default function BookingModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [bookingError, setBookingError] = useState<string|null>(null)
   const [bookingSuccess, setBookingSuccess] = useState(false)
+  // Flujo de abono: una vez creada la cita 'pending', el botón reintenta SOLO el
+  // pago (no vuelve a reservar, para no duplicar la cita).
+  const [bookedApptId, setBookedApptId] = useState<string|null>(null)
+  const [payPhase, setPayPhase] = useState<'none'|'approved'|'pending'>('none')
+
+  const depositEnabled = Boolean(tenant?.deposit_enabled)
+  const depositPercent = Number(tenant?.deposit_percent ?? 50)
 
   // Initialize from defaults when opened
   useEffect(() => {
@@ -64,6 +105,9 @@ export default function BookingModal({
       setBookingSuccess(false)
       setDateStr('')
       setCustomerInfo({ name: '', phone: '', email: '' })
+      setBookedApptId(null)
+      setPayPhase('none')
+      setBookingError(null)
     }
   }, [isOpen, initialServiceId, initialStaffId, services, staffList])
 
@@ -78,6 +122,63 @@ export default function BookingModal({
       })
     }
   }, [dateStr, selectedStaff, selectedService, tenant.id])
+
+  const startDepositPayment = async (appointmentId: string) => {
+    const intent = await createDepositIntent(appointmentId)
+    if ('error' in intent) {
+      setBookingError('Tu cupo quedó reservado, pero no se pudo iniciar el pago: ' + intent.error)
+      return
+    }
+    let WidgetCheckout: WompiCtor
+    try {
+      WidgetCheckout = await loadWompiWidget()
+    } catch (e) {
+      setBookingError(e instanceof Error ? e.message : 'No se pudo cargar el sistema de pago.')
+      return
+    }
+    const checkout = new WidgetCheckout({
+      currency: intent.currency,
+      amountInCents: intent.amountInCents,
+      reference: intent.reference,
+      publicKey: intent.publicKey,
+      signature: { integrity: intent.signature },
+    })
+    checkout.open((result) => {
+      const status = result?.transaction?.status
+      if (status === 'APPROVED') {
+        setPayPhase('approved'); setBookingSuccess(true)
+      } else if (status === 'PENDING') {
+        setPayPhase('pending'); setBookingSuccess(true)
+      } else {
+        setBookingError('El pago no se completó. Tu horario queda reservado por 15 minutos — puedes reintentar el pago.')
+      }
+    })
+  }
+
+  const handleConfirm = async () => {
+    if (!selectedStaff || !selectedService || !selectedSlot) return
+    setIsSubmitting(true)
+    setBookingError(null)
+    try {
+      let apptId = bookedApptId
+      if (!apptId) {
+        const res = await submitBooking(tenant.id, selectedStaff.id, selectedService.id, customerInfo.name, customerInfo.phone, selectedSlot.startIso, selectedSlot.endIso, selectedService.base_price, customerInfo.email)
+        if (res.error || !res.appointmentId) {
+          setBookingError(res.error || 'No se pudo crear la reserva.')
+          return
+        }
+        apptId = res.appointmentId as string
+        setBookedApptId(apptId)
+      }
+      if (depositEnabled) {
+        await startDepositPayment(apptId)
+      } else {
+        setBookingSuccess(true)
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   if (!isOpen) return null
 
@@ -113,8 +214,16 @@ export default function BookingModal({
             <div style={{ width: 64, height: 64, borderRadius: '50%', margin: '0 auto 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in srgb, var(--color-primary) 16%, transparent)', color: 'var(--color-primary)' }}>
               <Check size={30} strokeWidth={2.25} />
             </div>
-            <h2 style={{ fontSize: '1.9rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>Cita confirmada</h2>
-            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '2rem' }}>Te esperamos pronto en {tenant.name}.</p>
+            <h2 style={{ fontSize: '1.9rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>
+              {payPhase === 'pending' ? 'Confirmando tu pago…' : 'Cita confirmada'}
+            </h2>
+            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '2rem' }}>
+              {payPhase === 'pending'
+                ? 'Tu abono está en proceso. Confirmaremos tu cita apenas se apruebe el pago.'
+                : payPhase === 'approved'
+                  ? `Recibimos tu abono. Te esperamos pronto en ${tenant.name}.`
+                  : `Te esperamos pronto en ${tenant.name}.`}
+            </p>
             <button onClick={() => window.location.reload()} className="booking-primary-btn" style={{ background: 'var(--color-primary)', color: onPrimary, border: 'none', padding: '0.85rem 1.6rem', borderRadius: '10px', fontWeight: 700, cursor: 'pointer' }}>
               Finalizar
             </button>
@@ -212,7 +321,13 @@ export default function BookingModal({
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}><span style={{ color: 'var(--color-text-muted)' }}>Servicio</span><span style={{ fontWeight: 600, textAlign: 'right' }}>{selectedService.name}</span></div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}><span style={{ color: 'var(--color-text-muted)' }}>Con</span><span style={{ fontWeight: 600, textAlign: 'right' }}>{selectedStaff.name}</span></div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}><span style={{ color: 'var(--color-text-muted)' }}>Cuándo</span><span style={{ ...mono, fontWeight: 600, textAlign: 'right', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}><Clock size={13} /> {formatDate(selectedSlot.startIso)} · {selectedSlot.label}</span></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', borderTop: '1px solid var(--color-line)', paddingTop: '0.7rem' }}><span style={{ color: 'var(--color-text-muted)' }}>Total</span><span style={{ ...mono, color: 'var(--color-primary)', fontWeight: 700 }}>${formatMoney(selectedService.base_price)}</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', borderTop: '1px solid var(--color-line)', paddingTop: '0.7rem' }}><span style={{ color: 'var(--color-text-muted)' }}>Total</span><span style={{ ...mono, color: depositEnabled ? 'var(--color-text-primary)' : 'var(--color-primary)', fontWeight: 700 }}>${formatMoney(selectedService.base_price)}</span></div>
+                  {depositEnabled && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
+                      <span style={{ color: 'var(--color-text-muted)' }}>Abono hoy ({depositPercent}%)</span>
+                      <span style={{ ...mono, color: 'var(--color-primary)', fontWeight: 700 }}>${formatMoney(Math.round(selectedService.base_price * depositPercent / 100))}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div style={{ display: 'grid', gap: '1rem' }}>
@@ -227,15 +342,14 @@ export default function BookingModal({
 
                 <button disabled={isSubmitting || !customerInfo.name || !customerInfo.phone}
                   className="booking-primary-btn"
-                  onClick={async () => {
-                    setIsSubmitting(true)
-                    const res = await submitBooking(tenant.id, selectedStaff.id, selectedService.id, customerInfo.name, customerInfo.phone, selectedSlot.startIso, selectedSlot.endIso, selectedService.base_price, customerInfo.email)
-                    if (res.error) setBookingError(res.error)
-                    else setBookingSuccess(true)
-                    setIsSubmitting(false)
-                  }}
+                  onClick={handleConfirm}
                   style={{ marginTop: '1.5rem', width: '100%', background: 'var(--color-primary)', color: onPrimary, padding: '1rem', borderRadius: '10px', border: 'none', fontWeight: 700, fontSize: '1.05rem', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: (isSubmitting || !customerInfo.name || !customerInfo.phone) ? 0.55 : 1 }}
-                >{isSubmitting ? 'Procesando…' : 'Confirmar cita'}</button>
+                >{isSubmitting ? 'Procesando…' : depositEnabled ? (bookedApptId ? 'Reintentar pago' : 'Reservar y pagar abono') : 'Confirmar cita'}</button>
+                {depositEnabled && (
+                  <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: '0.75rem' }}>
+                    Pagas el abono de forma segura con Wompi. El resto se paga en el local.
+                  </p>
+                )}
               </div>
             )}
           </>

@@ -159,3 +159,32 @@ export async function submitBooking(
 
   return { success: true, appointmentId: data }
 }
+
+/**
+ * Inicia el cobro del abono para una cita 'pending'. Llama al RPC SECURITY DEFINER
+ * create_deposit_intent, que calcula la firma SHA256 server-side (el secreto de
+ * integridad nunca sale del backend) y devuelve lo necesario para abrir el widget
+ * de Wompi con las llaves del propio negocio.
+ */
+export async function createDepositIntent(appointmentId: string): Promise<
+  | { publicKey: string; reference: string; amountInCents: number; currency: string; signature: string; isSandbox: boolean }
+  | { error: string }
+> {
+  const insforge = getAnonClient()
+  const { data, error } = await insforge.database.rpc('create_deposit_intent', {
+    p_appointment_id: appointmentId,
+  })
+  if (error) return { error: error.message }
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { public_key: string; reference: string; amount_in_cents: number | string; currency: string; signature: string; is_sandbox: boolean }
+    | undefined
+  if (!row) return { error: 'No se pudo iniciar el cobro del abono.' }
+  return {
+    publicKey: row.public_key,
+    reference: row.reference,
+    amountInCents: Number(row.amount_in_cents),
+    currency: row.currency,
+    signature: row.signature,
+    isSandbox: row.is_sandbox,
+  }
+}
