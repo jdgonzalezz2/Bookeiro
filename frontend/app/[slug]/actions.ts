@@ -117,21 +117,22 @@ export async function getAvailableSlots(tenantId: string, staffId: string, dateS
 }
 
 export async function submitBooking(
-  tenantId: string, 
-  staffId: string, 
-  serviceId: string, 
-  name: string, 
-  phone: string, 
-  startIso: string, 
-  endIso: string, 
-  price: number
+  tenantId: string,
+  staffId: string,
+  serviceId: string,
+  name: string,
+  phone: string,
+  startIso: string,
+  endIso: string,
+  price: number,
+  email?: string
 ) {
   const insforge = getAnonClient()
 
   // NOTE: `p_total_price` is IGNORED by the book_appointment RPC — the price is
   // computed server-side from services/staff_services so a client cannot book at
   // an arbitrary price. We still pass it only for backward signature compat.
-  const { data, error } = await insforge.database.rpc('book_appointment', {
+  const params: Record<string, unknown> = {
     p_tenant_id: tenantId,
     p_staff_id: staffId,
     p_service_id: serviceId,
@@ -139,8 +140,18 @@ export async function submitBooking(
     p_customer_phone: phone,
     p_start_time: startIso,
     p_end_time: endIso,
-    p_total_price: price
-  })
+    p_total_price: price,
+  }
+
+  // Email is optional (used for appointment reminders). Only send the extra RPC
+  // arg when the customer actually provided one — booking without an email keeps
+  // using the original 8-arg signature and never depends on migration 13.
+  const trimmedEmail = email?.trim()
+  if (trimmedEmail) {
+    params.p_customer_email = trimmedEmail
+  }
+
+  const { data, error } = await insforge.database.rpc('book_appointment', params)
 
   if (error) {
     return { error: error.message }

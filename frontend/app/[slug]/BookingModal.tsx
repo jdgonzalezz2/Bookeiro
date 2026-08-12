@@ -38,7 +38,7 @@ export default function BookingModal({
   const [loadingSlots, setLoadingSlots] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
 
-  const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '' })
+  const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '', email: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [bookingError, setBookingError] = useState<string|null>(null)
   const [bookingSuccess, setBookingSuccess] = useState(false)
@@ -63,7 +63,7 @@ export default function BookingModal({
 
       setBookingSuccess(false)
       setDateStr('')
-      setCustomerInfo({ name: '', phone: '' })
+      setCustomerInfo({ name: '', phone: '', email: '' })
     }
   }, [isOpen, initialServiceId, initialStaffId, services, staffList])
 
@@ -218,13 +218,18 @@ export default function BookingModal({
                 <div style={{ display: 'grid', gap: '1rem' }}>
                   <div><label className="form-label" style={{ color: 'var(--color-text-primary)' }}>Tu nombre</label><input type="text" className="form-input" style={{ background: 'var(--color-bg-deep)', color: 'var(--color-text-primary)', border: '1px solid var(--color-line)' }} value={customerInfo.name} onChange={e => setCustomerInfo({...customerInfo, name: e.target.value})} placeholder="Juan Pérez" /></div>
                   <div><label className="form-label" style={{ color: 'var(--color-text-primary)' }}>Teléfono</label><input type="tel" className="form-input" style={{ background: 'var(--color-bg-deep)', color: 'var(--color-text-primary)', border: '1px solid var(--color-line)' }} value={customerInfo.phone} onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})} placeholder="3001234567" /></div>
+                  <div>
+                    <label className="form-label" style={{ color: 'var(--color-text-primary)' }}>Email <span style={{ color: 'var(--color-text-muted)', fontWeight: 400 }}>(opcional)</span></label>
+                    <input type="email" className="form-input" style={{ background: 'var(--color-bg-deep)', color: 'var(--color-text-primary)', border: '1px solid var(--color-line)' }} value={customerInfo.email} onChange={e => setCustomerInfo({...customerInfo, email: e.target.value})} placeholder="tucorreo@ejemplo.com" />
+                    <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginTop: '0.35rem' }}>Te enviaremos un recordatorio de tu cita.</div>
+                  </div>
                 </div>
 
                 <button disabled={isSubmitting || !customerInfo.name || !customerInfo.phone}
                   className="booking-primary-btn"
                   onClick={async () => {
                     setIsSubmitting(true)
-                    const res = await submitBooking(tenant.id, selectedStaff.id, selectedService.id, customerInfo.name, customerInfo.phone, selectedSlot.startIso, selectedSlot.endIso, selectedService.base_price)
+                    const res = await submitBooking(tenant.id, selectedStaff.id, selectedService.id, customerInfo.name, customerInfo.phone, selectedSlot.startIso, selectedSlot.endIso, selectedService.base_price, customerInfo.email)
                     if (res.error) setBookingError(res.error)
                     else setBookingSuccess(true)
                     setIsSubmitting(false)
