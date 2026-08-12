@@ -76,6 +76,7 @@ export async function loadRealRailDay(
         .from('appointments')
         .select('id, staff_id, service_id, customer_name, start_time, end_time, status, total_price')
         .eq('tenant_id', tenantId)
+        .neq('status', 'cancelled') // No dibujar bloques muertos de citas canceladas.
         .gte('start_time', dayStartIso)
         .lt('start_time', dayEndIso),
       insforge.database

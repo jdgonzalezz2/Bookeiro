@@ -138,7 +138,7 @@ export default function RailClient({
    * AUTHORITATIVE row into the last authoritative day and LOAD_DAY it; on failure
    * we LOAD_DAY the pre-mutation authoritative day (rollback) and surface the error.
    */
-  const runPersist = (optimistic: () => void, call: () => Promise<MutationResult>, selectionId: string | null) => {
+  const runPersist = (optimistic: () => void, call: () => Promise<MutationResult>, selectionId: string | null, onSuccess?: () => void) => {
     const base = authoritativeDayRef.current
     optimistic()
     setMutation({ status: 'saving' })
@@ -149,6 +149,7 @@ export default function RailClient({
           authoritativeDayRef.current = nextDay
           dispatch({ type: 'LOAD_DAY', day: nextDay, preserveSelectionId: res.appointment.id ?? selectionId })
           setMutation({ status: 'success' })
+          onSuccess?.() // limpiar inputs SOLO al confirmar el guardado (no en rollback)
         } else {
           dispatch({ type: 'LOAD_DAY', day: base }) // rollback to authoritative
           setMutation({ status: 'error', code: res.code, message: res.message })
@@ -262,9 +263,10 @@ export default function RailClient({
       () => dispatch({ type: 'CONFIRM_TENTATIVE', customerName: name }),
       () => persistence.create({ staffId: tent.laneId, serviceId: tent.serviceId, startIso: new Date(tent.start).toISOString(), customerName: name, customerPhone: phone || undefined }),
       null,
+      // Limpia los campos SOLO si el guardado tuvo éxito; si falla (p. ej. colisión),
+      // el rollback conserva lo tipeado para reintentar sin re-escribir.
+      () => { setCustName(''); setCustPhone('') },
     )
-    setCustName('')
-    setCustPhone('')
   }
 
   const commitCancel = (id: string) => {
