@@ -53,7 +53,7 @@ export default function StaffManagementTabs({ staff, initialHours }: StaffManage
           background: 'var(--color-primary)',
           borderRadius: '12px',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          boxShadow: '0 4px 12px rgba(201,168,76,0.3)',
+          boxShadow: '0 4px 12px rgba(198,152,47,0.3)',
           zIndex: 1
         }} />
 

@@ -54,7 +54,7 @@ export default function CreateStaffClient() {
             alignItems: 'center',
             gap: '0.75rem',
             borderRadius: '16px',
-            boxShadow: '0 4px 20px rgba(201,168,76,0.15)',
+            boxShadow: '0 4px 20px rgba(198,152,47,0.15)',
             border: '1px solid rgba(255,255,255,0.1)',
             transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
           }}

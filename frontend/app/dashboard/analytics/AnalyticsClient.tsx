@@ -8,7 +8,8 @@ import {
 } from 'recharts'
 import { DollarSign, Calendar as CalendarIcon, TrendingUp, AlertTriangle, Users2, Activity } from 'lucide-react'
 
-const PIE_COLORS = ['#c9a84c', '#e8cc7a', '#3498db', '#9b59b6', '#2ecc71', '#e74c3c'];
+// COMPÁS chart palette — warm, restrained tones that sit on paper (no neon primaries)
+const PIE_COLORS = ['#c6982f', '#c05a3e', '#5e7a54', '#a97e24', '#5a6b7a', '#8a6d3b'];
 
 export default function AnalyticsClient({ initialData }: { initialData: any[] }) {
   const router = useRouter()
@@ -103,14 +104,14 @@ export default function AnalyticsClient({ initialData }: { initialData: any[] })
       
       {/* 4 KPIs Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-        <KpiCard icon={<DollarSign size={28} color="#2ecc71" />} title="Ingreso Bruto" value={`$${totalRevenue.toLocaleString()}`} bg="rgba(46, 204, 113, 0.1)" />
-        <KpiCard icon={<CalendarIcon size={28} color="var(--color-primary)" />} title="Volumen (Citas)" value={totalAppointments} bg="rgba(201, 168, 76, 0.1)" />
-        <KpiCard icon={<TrendingUp size={28} color="#3498db" />} title="Ticket Promedio" value={`$${avgTicket}`} bg="rgba(52, 152, 219, 0.1)" />
+        <KpiCard icon={<DollarSign size={28} color="#5e7a54" />} title="Ingreso Bruto" value={`$${totalRevenue.toLocaleString()}`} bg="rgba(94, 122, 84, 0.12)" />
+        <KpiCard icon={<CalendarIcon size={28} color="var(--color-primary)" />} title="Volumen (Citas)" value={totalAppointments} bg="rgba(198, 152, 47, 0.12)" />
+        <KpiCard icon={<TrendingUp size={28} color="#5a6b7a" />} title="Ticket Promedio" value={`$${avgTicket}`} bg="rgba(90, 107, 122, 0.12)" />
         <KpiCard 
-           icon={<AlertTriangle size={28} color={Number(cancellationRate) > 15 ? "#e74c3c" : "#f1c40f"} />} 
+           icon={<AlertTriangle size={28} color={Number(cancellationRate) > 15 ? "#c05a3e" : "#a97e24"} />} 
            title="Tasa de Cancelación" 
            value={`${cancellationRate}%`} 
-           bg={Number(cancellationRate) > 15 ? "rgba(231, 76, 60, 0.1)" : "rgba(241, 196, 15, 0.1)"} 
+           bg={Number(cancellationRate) > 15 ? "rgba(192, 90, 62, 0.12)" : "rgba(169, 126, 36, 0.12)"} 
            subtitle={`${cancelledApps.length} nulas`}
         />
       </div>
@@ -192,7 +193,7 @@ export default function AnalyticsClient({ initialData }: { initialData: any[] })
                 <XAxis dataKey="hour" stroke="rgba(255,255,255,0.4)" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} dy={10} />
                 <YAxis allowDecimals={false} stroke="rgba(255,255,255,0.4)" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomChartTooltip />} cursor={{fill: 'rgba(255,255,255,0.02)'}} />
-                <Bar dataKey="count" fill="#3498db" radius={[4, 4, 0, 0]} barSize={32} />
+                <Bar dataKey="count" fill="#c6982f" radius={[4, 4, 0, 0]} barSize={32} />
               </BarChart>
             </ResponsiveContainer>
           ) : <EmptyState />}

@@ -74,17 +74,17 @@ export default function Sidebar({ profile, tenant, onClose }: { profile: any, te
               fontWeight: 700, 
               fontSize: '0.8rem',
               letterSpacing: '0.02em',
-              boxShadow: '0 4px 12px rgba(201,168,76,0.15)',
+              boxShadow: '0 4px 12px rgba(198,152,47,0.15)',
               transition: 'all 0.2s ease',
               width: '100%'
             }}
             onMouseOver={(e) => {
               e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.boxShadow = '0 6px 16px rgba(201,168,76,0.25)';
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(198,152,47,0.25)';
             }}
             onMouseOut={(e) => {
               e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(201,168,76,0.15)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(198,152,47,0.15)';
             }}
           >
             VER MI VITRINA <ArrowUpRight size={16} />

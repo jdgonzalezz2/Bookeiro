@@ -53,15 +53,15 @@ export default async function StaffPage() {
                 </div>
                 <div>
                   <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>{s.name}</div>
-                  <div style={{ fontSize: '0.8rem', color: s.is_active ? '#2ecc71' : '#e74c3c', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ fontSize: '0.8rem', color: s.is_active ? '#5e7a54' : '#c05a3e', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {s.is_active ? '● Activo' : '● Inactivo'}
                     
                     {s.user_id ? (
-                      <span style={{ fontSize: '0.75rem', background: 'rgba(46, 204, 113, 0.2)', color: '#2ecc71', padding: '0.2rem 0.6rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <span style={{ fontSize: '0.75rem', background: 'rgba(94, 122, 84, 0.18)', color: '#5e7a54', padding: '0.2rem 0.6rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         <CheckCircle2 size={12} /> Vinculado
                       </span>
                     ) : s.invite_email ? (
-                      <span style={{ fontSize: '0.75rem', background: 'rgba(241, 196, 15, 0.2)', color: '#f1c40f', padding: '0.2rem 0.6rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <span style={{ fontSize: '0.75rem', background: 'rgba(198, 152, 47, 0.18)', color: '#a97e24', padding: '0.2rem 0.6rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         <Hourglass size={12} /> Esperando a {s.invite_email}
                       </span>
                     ) : null}

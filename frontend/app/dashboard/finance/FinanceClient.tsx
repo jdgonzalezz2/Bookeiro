@@ -94,7 +94,7 @@ export default function FinanceClient({ payments, appointments }: { payments: Pa
                   borderBottom: i !== payments.length - 1 ? '1px solid var(--color-glass-border)' : 'none',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(46, 204, 113, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2ecc71' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(94, 122, 84, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#5e7a54' }}>
                       <ArrowDownLeft size={18} />
                     </div>
                     <div>
@@ -108,7 +108,7 @@ export default function FinanceClient({ payments, appointments }: { payments: Pa
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontWeight: 700, color: '#2ecc71', fontSize: '1.05rem', fontVariantNumeric: 'tabular-nums' }}>
+                    <div style={{ fontWeight: 700, color: '#5e7a54', fontSize: '1.05rem', fontVariantNumeric: 'tabular-nums' }}>
                       +{cop(amount)}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '10px', display: 'inline-block', marginTop: '4px' }}>

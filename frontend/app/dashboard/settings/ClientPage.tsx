@@ -184,7 +184,7 @@ export default function ClientPage({ tenant }: { tenant: any }) {
                 background: isActive ? 'var(--color-primary)' : isCompleted ? 'var(--color-primary-light)' : 'var(--color-glass)',
                 color: isActive || isCompleted ? '#FFF' : 'var(--color-text-muted)',
                 fontWeight: 600, border: isActive ? 'none' : `1px solid ${isCompleted ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                boxShadow: isActive ? '0 0 0 4px rgba(201, 168, 76, 0.15)' : 'none',
+                boxShadow: isActive ? '0 0 0 4px rgba(198, 152, 47, 0.15)' : 'none',
                 transition: 'all 0.3s ease'
               }}>
                 {isCompleted ? <Check size={20} /> : i + 1}
@@ -561,7 +561,7 @@ function PublicationSuccessView({ tenant, formData, logoUrl, coverUrl, onEditMor
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', 
               background: 'var(--color-primary)', color: '#fff', padding: '1.25rem', 
               borderRadius: 'var(--radius-md)', fontWeight: 700, textDecoration: 'none',
-              transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(201, 168, 76, 0.3)'
+              transition: 'all 0.2s', boxShadow: '0 4px 15px rgba(198, 152, 47, 0.3)'
             }}
           >
             <ExternalLink size={20} /> Ver mi vitrina pública

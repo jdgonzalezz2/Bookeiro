@@ -67,7 +67,7 @@ export default function OnboardingPage() {
           <form action={formAction}>
             {/* Help for invited staff */}
             <div style={{ 
-              background: 'rgba(201,168,76,0.05)', 
+              background: 'rgba(198,152,47,0.05)', 
               border: '1px border-dashed var(--color-primary)', 
               borderRadius: 'var(--radius-lg)', 
               padding: '1.25rem', 

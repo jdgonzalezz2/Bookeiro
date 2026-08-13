@@ -82,7 +82,7 @@ export default function HorariosClient({ staffId, initialHours }: { staffId: str
               display: 'flex', 
               alignItems: 'center', 
               gap: '0.6rem',
-              boxShadow: '0 4px 15px rgba(201,168,76,0.2)'
+              boxShadow: '0 4px 15px rgba(198,152,47,0.2)'
             }}
           >
             {isSaving ? 'Guardando...' : <><Save size={18} /> Guardar Cambios</>}

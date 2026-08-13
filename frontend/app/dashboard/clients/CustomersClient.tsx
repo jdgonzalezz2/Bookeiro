@@ -76,7 +76,7 @@ export default function CustomersClient({ appointments }: { appointments: Appoin
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem' }}>
           <div style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: '20px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            <div style={{ width: 48, height: 48, borderRadius: '12px', background: 'rgba(201,168,76,0.1)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 48, height: 48, borderRadius: '12px', background: 'rgba(198,152,47,0.1)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <UsersIcon size={24} />
             </div>
             <div>

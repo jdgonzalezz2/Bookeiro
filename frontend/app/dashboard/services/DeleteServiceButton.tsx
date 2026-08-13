@@ -30,9 +30,9 @@ export default function DeleteServiceButton({ serviceId, serviceName }: DeleteSe
       disabled={loading}
       className="btn btn-ghost" 
       style={{ 
-        color: '#ff4d6d', 
-        padding: '0.6rem', 
-        minWidth: 'auto', 
+        color: 'var(--color-error)',
+        padding: '0.6rem',
+        minWidth: 'auto',
         borderRadius: '12px',
         opacity: loading ? 0.5 : 1
       }}

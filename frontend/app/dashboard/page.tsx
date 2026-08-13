@@ -50,7 +50,7 @@ export default async function DashboardPage() {
           </div>
 
           <div style={{ position: 'relative', zIndex: 1, maxWidth: '600px' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(201,168,76,0.15)', color: 'var(--color-primary)', padding: '0.4rem 0.8rem', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', fontWeight: 600, marginBottom: '1rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(198,152,47,0.15)', color: 'var(--color-primary)', padding: '0.4rem 0.8rem', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', fontWeight: 600, marginBottom: '1rem' }}>
               <CheckCircle2 size={16} /> Alta Prioridad
             </div>
             

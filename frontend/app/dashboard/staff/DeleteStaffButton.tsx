@@ -44,9 +44,9 @@ export default function DeleteStaffButton({ staffId, staffName }: DeleteStaffBut
         padding: '0.6rem', 
         minWidth: 'auto', 
         borderRadius: '12px', 
-        color: '#ff4d6d',
-        background: 'rgba(255, 77, 109, 0.05)',
-        border: '1px solid rgba(255, 77, 109, 0.1)',
+        color: 'var(--color-error)',
+        background: 'rgba(192, 90, 62, 0.06)',
+        border: '1px solid rgba(192, 90, 62, 0.14)',
         opacity: loading ? 0.5 : 1
       }}
       title="Borrar profesional permanentemente"

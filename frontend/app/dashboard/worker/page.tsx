@@ -109,12 +109,12 @@ export default async function WorkerDashboardPage() {
           {/* Dynamic Mesh Background */}
           <div style={{ 
             position: 'absolute', top: '-20%', right: '-10%', width: '300px', height: '300px', 
-            background: 'radial-gradient(circle, rgba(201,168,76,0.1) 0%, transparent 70%)', 
+            background: 'radial-gradient(circle, rgba(198,152,47,0.1) 0%, transparent 70%)', 
             filter: 'blur(40px)', zIndex: 0
           }} />
           <div style={{ 
             position: 'absolute', bottom: '-20%', left: '-5%', width: '250px', height: '250px', 
-            background: 'radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%)', 
+            background: 'radial-gradient(circle, rgba(198,152,47,0.05) 0%, transparent 70%)', 
             filter: 'blur(30px)', zIndex: 0
           }} />
 
@@ -139,9 +139,9 @@ export default async function WorkerDashboardPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
               <span style={{ 
                 fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', 
-                letterSpacing: '0.15em', background: 'rgba(201,168,76,0.15)', 
+                letterSpacing: '0.15em', background: 'rgba(198,152,47,0.15)', 
                 color: 'var(--color-primary)', padding: '0.4rem 1rem', borderRadius: '100px',
-                border: '1px solid rgba(201,168,76,0.2)'
+                border: '1px solid rgba(198,152,47,0.2)'
               }}>
                 Portal Professional
               </span>
@@ -243,7 +243,7 @@ export default async function WorkerDashboardPage() {
                 position: 'relative',
                 zIndex: 1,
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: isToday ? '0 10px 40px rgba(201,168,76,0.06)' : 'none',
+                boxShadow: isToday ? '0 10px 40px rgba(198,152,47,0.06)' : 'none',
                 overflow: 'hidden'
               }}
               >
@@ -285,8 +285,8 @@ export default async function WorkerDashboardPage() {
                     <div>
                       <div style={{ 
                         fontWeight: 700, fontSize: '0.85rem', color: 'var(--color-primary)', 
-                        padding: '0.4rem 0.8rem', background: 'rgba(201,168,76,0.1)', borderRadius: '8px', 
-                        display: 'inline-block', marginBottom: '0.5rem', border: '1px solid rgba(201,168,76,0.1)'
+                        padding: '0.4rem 0.8rem', background: 'rgba(198,152,47,0.1)', borderRadius: '8px', 
+                        display: 'inline-block', marginBottom: '0.5rem', border: '1px solid rgba(198,152,47,0.1)'
                       }}>
                         {(app.services as any)?.name || 'Servicio'}
                       </div>
