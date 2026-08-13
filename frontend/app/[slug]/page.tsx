@@ -6,7 +6,9 @@ export const revalidate = 60 // Revalidate every minute
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params
-  const slug = resolvedParams.slug
+  // Los slugs se guardan en minúsculas (onboarding); normalizamos el de la URL
+  // para que un link compartido con mayúsculas/espacios no dé 404.
+  const slug = resolvedParams.slug.trim().toLowerCase()
   const insforge = createInsForgeServerClient()
   
   const { data: tenant } = await insforge.database
@@ -26,7 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function PublicTenantPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params
-  const slug = resolvedParams.slug
+  const slug = resolvedParams.slug.trim().toLowerCase()
   const insforge = createInsForgeServerClient()
   
   const { data: tenant } = await insforge.database
